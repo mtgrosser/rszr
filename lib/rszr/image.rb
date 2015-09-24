@@ -1,5 +1,3 @@
-$N ||= 0
-
 module Rszr
   class Image
     include Base
@@ -19,10 +17,8 @@ module Rszr
       
       def finalizer(ptr)
         Proc.new do
-          puts "releasing object #{$N} #{ptr.inspect}"
           LIB.imlib_context_set_image(ptr)
           LIB.imlib_free_image
-          $N = $N - 1
         end
       end
     end
@@ -30,7 +26,6 @@ module Rszr
     def initialize(ptr)
       @ptr = ptr
       ObjectSpace.define_finalizer(self, self.class.send(:finalizer, ptr))
-      $N = $N + 1
     end
     
     def width
