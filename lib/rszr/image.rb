@@ -39,7 +39,7 @@ module Rszr
       LIB.imlib_image_get_height
     end
     
-    def resize_to(options = {})
+    def resize(options = {})
       assert_valid_keys options, :width, :height, :max_width, :max_height
       context_set_image
       new_width = options[:width] || LIB.imlib_image_get_width
@@ -74,6 +74,7 @@ module Rszr
     
     def save(path, format = nil)
       context_set_image
+      format ||= format_from_filename(path) || 'jpg'
       LIB.imlib_image_set_format(format)
       LIB.imlib_save_image(path)
       true
@@ -84,6 +85,10 @@ module Rszr
     end
     
     private
+    
+    def format_from_filename(path)
+      File.extname(path)[1..-1]
+    end
     
     def context_set_image
       LIB.imlib_context_set_image(ptr)
