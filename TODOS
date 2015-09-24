@@ -1,0 +1,8 @@
+* raise specific errors, like FileNotFound, FileNotSaved etc. - also see imlib2 error struct docs
+* check whether Base protected include works
+* add TESTS
+* add BENCHMARKS
+* add default resize behaviour (keep aspect ratio)
+* add rdoc comments
+* test and document allowed file formats
+
