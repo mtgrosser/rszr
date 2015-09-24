@@ -1,3 +1,5 @@
+$N ||= 0
+
 module Rszr
   class Image
     include Base
@@ -10,23 +12,25 @@ module Rszr
         raise unless File.exist?(path)
         ptr = LIB.imlib_load_image_without_cache(path)
         raise if ptr.null?
-        image = new(ptr)
-        ObjectSpace.define_finalizer(image, finalizer(ptr))
-        image
+        new(ptr)
       end
       
       private
       
       def finalizer(ptr)
-        lambda do
+        Proc.new do
+          puts "releasing object #{$N} #{ptr.inspect}"
           LIB.imlib_context_set_image(ptr)
           LIB.imlib_free_image
+          $N = $N - 1
         end
       end
     end
     
     def initialize(ptr)
       @ptr = ptr
+      ObjectSpace.define_finalizer(self, self.class.send(:finalizer, ptr))
+      $N = $N + 1
     end
     
     def width
