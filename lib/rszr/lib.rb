@@ -1,10 +1,11 @@
 module Rszr
-  module LIB
+  
+  module Lib
     extend Fiddle::Importer
     
     dlload case RbConfig::CONFIG['arch']
     when /darwin/ then 'libImlib2.dylib'
-    when /mswin32/, /cygwin/ then 'imlib2.dll'
+    when /mswin/, /cygwin/ then 'imlib2.dll'
     else
       'libImlib2.so'
     end
@@ -39,6 +40,15 @@ module Rszr
     
     extern 'void        imlib_free_image()'
     extern 'void        imlib_free_image_and_decache()'
+    
+    def self.delegate(base)
+      base.class_eval do
+        Lib.methods.grep(/\Aimlib_/).each do |method|
+          define_method(method) { |*args| Lib.public_send(method, *args) }
+          private method
+        end
+      end
+    end
     
   end
 end

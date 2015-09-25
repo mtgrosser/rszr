@@ -1,6 +1,11 @@
 module Rszr
   module Base
     
+    def self.included(base)
+      Rszr::Lib.delegate(base)
+      Rszr::Lib.delegate(base.singleton_class)
+    end
+    
     protected
     
     def ptr
