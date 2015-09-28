@@ -12,7 +12,7 @@ gem 'rszr'
 
 Rszr requires the Imlib2 library to do the heavy lifting.
 
-### OS X
+*OS X*
 
 Using homebrew:
 
@@ -20,7 +20,7 @@ Using homebrew:
 brew install imlib2
 ```
 
-### Linux
+*Linux*
 
 Using your package manager:
 
