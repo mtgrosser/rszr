@@ -3,26 +3,24 @@ lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'rszr/version'
 
-Gem::Specification.new do |spec|
-  spec.name          = "rszr"
-  spec.version       = Rszr::VERSION
-  spec.authors       = ["Matthias Grosser"]
-  spec.email         = ["mtgrosser@gmx.net"]
+Gem::Specification.new do |s|
+  s.name          = "rszr"
+  s.version       = Rszr::VERSION
+  s.authors       = ["Matthias Grosser"]
+  s.email         = ["mtgrosser@gmx.net"]
 
-  spec.summary       = %q{Fast image resizer}
-  spec.description   = %q{Rszr was created to do one thing and do it fast}
-  spec.homepage      = "https://github.com/mtgrosser/rszr"
+  s.summary       = %q{Fast image resizer}
+  s.description   = %q{Rszr was created to do one thing and do it fast}
+  s.homepage      = "https://github.com/mtgrosser/rszr"
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
-  spec.bindir        = "exe"
-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
+  s.files         = Dir['{lib}/**/*.rb', 'LICENSE', 'README.md', 'Rakefile']
+  s.require_paths = ["lib"]
 
-  spec.add_development_dependency "bundler", "~> 1.9"
-  spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "byebug"
-  spec.add_development_dependency "rspec"
-  spec.add_development_dependency "simplecov"
-  spec.add_development_dependency "gd2-ffij"
-  spec.add_development_dependency "mini_magick"
+  s.add_development_dependency "bundler", "~> 1.9"
+  s.add_development_dependency "rake", "~> 10.0"
+  s.add_development_dependency "byebug"
+  s.add_development_dependency "rspec"
+  s.add_development_dependency "simplecov"
+  s.add_development_dependency "gd2-ffij"
+  s.add_development_dependency "mini_magick"
 end

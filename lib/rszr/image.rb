@@ -16,9 +16,11 @@ module Rszr
       def load(path, options = {})
         path = path.to_s
         raise FileNotFound unless File.exist?(path)
-        ptr = imlib_load_image_without_cache(path)
-        raise ImageLoadError if ptr.null?
-        instantiate(ptr)
+        load_error = LoadError.new
+        imlib_set_cache_size(0)
+        ptr = imlib_load_image_with_error_return(path, load_error.ptr)
+        raise load_error, load_error.message if ptr.null?
+        return instantiate(ptr)
       end
       alias :open :load
       
@@ -65,22 +67,22 @@ module Rszr
       self
     end
     
-    def crop(x, y, width, height)
-      context_set_image
-      cropped_ptr = imlib_create_cropped_image(x, y, width, height)
-      raise if cropped_ptr.null?
-      instantiate(cropped_ptr)
+    def crop(*args)
+      instantiate(create_cropped_image(*args))
     end
     
-    def crop!(x, y, width, height)
-      handle.replace!(crop(x, y, width, height).ptr)
+    def crop!(*args)
+      handle.replace!(create_cropped_image(*args))
+      self
     end
     
     def save(path, format = nil)
       context_set_image
       format ||= format_from_filename(path) || 'jpg'
       imlib_image_set_format(format)
-      imlib_save_image(path)
+      save_error = SaveError.new
+      imlib_save_image_with_error_return(path, save_error.ptr)
+      raise save_error, save_error.message if save_error.error?
       true
     end
     
@@ -136,7 +138,7 @@ module Rszr
           raise ArgumentError, "unconclusive arguments #{args.inspect} #{options.inspect}"
         end
       else
-        raise ArgumentError, "wrong number of arguments (#{args.size + 1} for 1..3)"
+        raise ArgumentError, "wrong number of arguments (#{args.size} for 1..2)"
       end
       
       #new_width = options[:width] || imlib_image_get_width
@@ -156,6 +158,13 @@ module Rszr
       resized_ptr = imlib_create_cropped_scaled_image(x, y, imlib_image_get_width, imlib_image_get_height, new_width.round, new_height.round)
       raise TransformationError, "error resizing image" if resized_ptr.null?
       resized_ptr
+    end
+    
+    def create_cropped_image(x, y, width, height)
+      context_set_image
+      cropped_ptr = imlib_create_cropped_image(x, y, width, height)
+      raise TransformationError, 'error cropping image' if cropped_ptr.null?
+      cropped_ptr
     end
     
     def format_from_filename(path)

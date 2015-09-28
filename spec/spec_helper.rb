@@ -81,6 +81,7 @@ end
 
 require 'rszr'
 require 'byebug'
+require 'tmpdir'
 
 RSpec.class_eval do
   def self.root
