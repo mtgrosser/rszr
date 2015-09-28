@@ -41,6 +41,8 @@ apt-get install libimlib2
 # bounding box 400x300
 image = Rszr::Image.load('image.jpg')
 image.resize(400, 300)
+
+# save it
 image.save('resized.jpg')
 
 # auto height
