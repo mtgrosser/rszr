@@ -21,7 +21,9 @@ module Rszr
         instantiate(ptr)
       end
       alias :open :load
-
+      
+      protected
+      
       def finalize(ptr)
         imlib_context_set_image(ptr)
         imlib_free_image
@@ -100,30 +102,35 @@ module Rszr
       options = args.last.is_a?(Hash) ? args.pop : {}
       assert_valid_keys options, :crop, :background, :skew  #:extend, :width, :height, :max_width, :max_height, :box
       context_set_image
-      left, top = 0, 0
+      x, y, = 0, 0
       if args.size == 1
         scale = args.first
         raise ArgumentError, "scale #{scale.inspect} out of range" unless scale > 0 && scale < 1
-        new_width = (width.to_f * scale).to_i
-        new_height = (height.to_f * scale).to_i
+        new_width = width.to_f * scale
+        new_height = height.to_f * scale
       elsif args.size == 2
         box_width, box_height = args
         if :auto == box_width && box_height.is_a?(Numeric)
           new_height = box_height
-          new_width = (box_height.to_f / height.to_f * width).to_i
+          new_width = box_height.to_f / height.to_f * width.to_f
         elsif box_width.is_a?(Numeric) && :auto == box_height
           new_width = box_width
-          new_height = (box_width.to_f / width.to_f * height).to_i
+          new_height = box_width.to_f / width.to_f * height.to_f
         elsif box_width.is_a?(Numeric) && box_height.is_a?(Numeric)
           if options[:skew]
             new_width, new_height = box_width, box_height
           elsif options[:crop]
-            # TODO: calculate top, left offset if crop
+            # TODO: calculate x, y offset if crop
           else
-            scale = box_width.to_f / width.to_f
-            scale = scale * box_height.to_f / (height.to_f * scale)
-            new_width = (scale * width.to_f).to_i
-            new_height = (scale * height.to_f).to_i
+            scale = width.to_f / height.to_f
+            box_scale = box_width.to_f / box_height.to_f
+            if scale >= box_scale # wider
+              new_width = box_width
+              new_height = height.to_f * box_width.to_f / width.to_f
+            else # narrower
+              new_height = box_height
+              new_width = width.to_f * box_height.to_f / height.to_f
+            end
           end
         else
           raise ArgumentError, "unconclusive arguments #{args.inspect} #{options.inspect}"
@@ -146,7 +153,7 @@ module Rszr
       #end
       
       imlib_context_set_anti_alias(1)
-      resized_ptr = imlib_create_cropped_scaled_image(left, top, imlib_image_get_width, imlib_image_get_height, new_width, new_height)
+      resized_ptr = imlib_create_cropped_scaled_image(x, y, imlib_image_get_width, imlib_image_get_height, new_width.round, new_height.round)
       raise TransformationError, "error resizing image" if resized_ptr.null?
       resized_ptr
     end

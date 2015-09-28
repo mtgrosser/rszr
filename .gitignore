@@ -35,3 +35,5 @@ build/
 .rvmrc
 
 .DS_Store
+
+/spec/examples.txt
