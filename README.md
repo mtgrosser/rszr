@@ -39,4 +39,12 @@ image.height => 300
 image.dimensions => [400, 300]
 ```
 
+## Speed
 
+Resizing an 1500x997 JPEG image to 800x532, 100 times:
+
+Library         | Time
+----------------|-----------
+MiniMagick      | 11.4 s
+GD2             | 7.2 s
+Rszr            | 3.2 s

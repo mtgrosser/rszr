@@ -23,4 +23,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "simplecov"
+  spec.add_development_dependency "gd2-ffij"
+  spec.add_development_dependency "mini_magick"
 end
