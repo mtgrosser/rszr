@@ -27,11 +27,11 @@ brew install imlib2
 Using your favourite package manager:
 
 ```bash
-yum install imlib2 imlib2-devel
+yum install imlib2
 ```
 
 ```bash
-apt-get install libimlib2 libimlib2-dev
+apt-get install libimlib2
 ```
 
 ## Usage
