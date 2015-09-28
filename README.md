@@ -10,6 +10,28 @@ In your Gemfile:
 gem 'rszr'
 ```
 
+Rszr requires the Imlib2 library to do the heavy lifting.
+
+### OS X
+
+Using homebrew:
+
+```bash
+brew install imlib2
+```
+
+### Linux
+
+Using your package manager:
+
+```bash
+yum install imlib2 imlib2-devel
+```
+
+```bash
+apt-get install libimlib2 libimlib2-dev
+```
+
 ## Usage
 
 ```ruby
