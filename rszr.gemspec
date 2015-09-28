@@ -10,7 +10,8 @@ Gem::Specification.new do |s|
   s.email         = ["mtgrosser@gmx.net"]
 
   s.summary       = %q{Fast image resizer}
-  s.description   = %q{Rszr was created to do one thing and do it fast}
+  s.description   = %q{Fast image resizer - do one thing and do it fast.}
+  s.licenses      = ['MIT']
   s.homepage      = "https://github.com/mtgrosser/rszr"
 
   s.files         = Dir['{lib}/**/*.rb', 'LICENSE', 'README.md', 'Rakefile']
