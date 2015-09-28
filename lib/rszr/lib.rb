@@ -24,6 +24,7 @@ module Rszr
     
     extern 'Imlib_Image imlib_load_image(const char *)'
     extern 'Imlib_Image imlib_load_image_without_cache(const char *)'
+    extern 'Imlib_Image imlib_create_image(int, int)'
     extern 'void        imlib_context_set_image(Imlib_Image)'
     extern 'int         imlib_image_get_width()'
     extern 'int         imlib_image_get_height()'
@@ -34,6 +35,7 @@ module Rszr
     # x, y, width, height
     extern 'Imlib_Image imlib_create_cropped_image(int, int, int, int)'
     
+    extern 'char *      imlib_image_format()'
     extern 'void        imlib_image_set_format(const char *)'
     extern 'void        imlib_save_image(const char *)'
     #extern 'void        imlib_save_image_with_error_return(const char *, Imlib_Load_Error *)'
@@ -42,11 +44,13 @@ module Rszr
     extern 'void        imlib_free_image_and_decache()'
     
     def self.delegate(base)
-      base.class_eval do
-        Lib.methods.grep(/\Aimlib_/).each do |method|
-          define_method(method) { |*args| Lib.public_send(method, *args) }
-          private method
-        end
+      Lib.methods.grep(/\Aimlib_/).each do |method|
+        line_no = __LINE__; str = %Q{
+          def #{method}(*args, &block)
+            Lib.#{method}(*args, &block)
+          end
+        }
+        base.class_eval(str, __FILE__, line_no)
       end
     end
     

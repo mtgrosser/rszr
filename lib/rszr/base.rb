@@ -8,8 +8,12 @@ module Rszr
     
     protected
     
+    def handle
+      @handle
+    end
+    
     def ptr
-      @ptr
+      @handle.ptr
     end
     
     private

@@ -4,6 +4,8 @@ require 'rbconfig'
 require 'pathname'
 
 require 'rszr/version'
+require 'rszr/errors'
 require 'rszr/lib'
+require 'rszr/handle'
 require 'rszr/base'
 require 'rszr/image'
