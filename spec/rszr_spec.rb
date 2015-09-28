@@ -20,6 +20,10 @@ RSpec.describe 'Rszr' do
     expect(Rszr::Image.load(RSpec.root.join('images/CHUNKY.PNG')).format).to eq('png')
   end
   
+  it 'can instantiate new images' do
+    expect(Rszr::Image.new(300, 400)).to be_kind_of(Rszr::Image)
+  end
+  
   context 'Resizing images' do
 
     before(:each) do

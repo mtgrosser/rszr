@@ -16,13 +16,13 @@ module Rszr
     end
     
     def finalize!(*args)
-      puts "Finalizing #{args.inspect} #{ptr.inspect}"
+      #puts "Finalizing #{args.inspect} #{ptr.inspect}"
       if !ptr.null? && klass
-        puts "  calling #{args.inspect}"
+        #puts "  calling #{args.inspect}"
         klass.send(:finalize, ptr)
         ptr = Fiddle::Pointer.new(0)
-      else
-        puts "  skipping #{args.inspect}"
+      #else
+        #puts "  skipping #{args.inspect}"
       end
     end
     
