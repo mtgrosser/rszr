@@ -10,9 +10,11 @@ In your Gemfile:
 gem 'rszr'
 ```
 
+### Imlib2
+
 Rszr requires the Imlib2 library to do the heavy lifting.
 
-*OS X*
+#### OS X
 
 Using homebrew:
 
@@ -20,9 +22,9 @@ Using homebrew:
 brew install imlib2
 ```
 
-*Linux*
+### Linux
 
-Using your package manager:
+Using your favourite package manager:
 
 ```bash
 yum install imlib2 imlib2-devel
