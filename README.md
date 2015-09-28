@@ -1,3 +1,4 @@
+[![Gem Version](https://badge.fury.io/rb/rszr.svg)](http://badge.fury.io/rb/rszr)
 # Rszr
 
 Rszr is a fast image resizer.
