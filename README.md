@@ -1,3 +1,4 @@
+[![Gem Version](https://badge.fury.io/rb/rszr.svg)](http://badge.fury.io/rb/rszr)
 # Rszr
 
 Rszr is a fast image resizer.
@@ -40,6 +41,8 @@ apt-get install libimlib2
 # bounding box 400x300
 image = Rszr::Image.load('image.jpg')
 image.resize(400, 300)
+
+# save it
 image.save('resized.jpg')
 
 # auto height
