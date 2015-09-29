@@ -3,11 +3,20 @@ module Rszr
   module Lib
     extend Fiddle::Importer
     
-    dlload case RbConfig::CONFIG['arch']
-    when /darwin/ then 'libImlib2.dylib'
-    when /mswin/, /cygwin/ then 'imlib2.dll'
+    library, message = case RbConfig::CONFIG['arch']
+      when /darwin/ then ['libImlib2.dylib', 'brew install imlib2']
+      when /mswin/, /cygwin/ then ['imlib2.dll', nil]
     else
-      'libImlib2.so'
+      ['libImlib2.so', "yum install imlib2 imlib2-devel\napt-get install libimlib2 libimlib2-dev"]
+    end
+
+    begin
+      dlload library
+    rescue Fiddle::DLError => e
+      print "\n    The Imlib2 library could not be loaded. "
+      puts "You can install it using\n\n    #{message}\n" if message
+      puts ''
+      raise e
     end
     
     typealias 'Imlib_Image',      'void *'
