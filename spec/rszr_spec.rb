@@ -9,7 +9,7 @@ RSpec.describe 'Rszr' do
   end
   
   it 'raises an error when trying to load a non-supported image' do
-    expect { Rszr::Image.load(RSpec.root.join('images/broken.jpg')) }.to raise_error(Rszr::LoadError, 'Unsupported format')
+    expect { Rszr::Image.load(RSpec.root.join('images/broken.jpg')) }.to raise_error(Rszr::LoadError)
   end
 
   it 'loads images with uppercase extension' do
