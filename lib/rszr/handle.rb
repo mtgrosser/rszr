@@ -20,7 +20,7 @@ module Rszr
       if !ptr.null? && klass
         #puts "  calling #{args.inspect}"
         klass.send(:finalize, ptr)
-        ptr = Fiddle::Pointer.new(0)
+        @ptr = Fiddle::Pointer.new(0)
       #else
         #puts "  skipping #{args.inspect}"
       end
