@@ -1,7 +1,7 @@
 [![Gem Version](https://badge.fury.io/rb/rszr.svg)](http://badge.fury.io/rb/rszr) [![Build Status](https://travis-ci.org/mtgrosser/rszr.svg)](https://travis-ci.org/mtgrosser/rszr)
-# Rszr
+# Rszr - fast image resizer for Ruby
 
-Rszr is a fast image resizer.
+Rszr is an image resizer for Ruby based on the Imlib2 library. It is faster and consumes less memory than MiniMagick, rmagick and GD2.
 
 ## Installation
 
