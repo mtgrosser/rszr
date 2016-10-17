@@ -23,7 +23,7 @@ Using homebrew:
 brew install imlib2
 ```
 
-### Linux
+#### Linux
 
 Using your favourite package manager:
 
