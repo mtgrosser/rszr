@@ -4,6 +4,8 @@ module Rszr
     def self.included(base)
       Rszr::Lib.delegate(base)
       Rszr::Lib.delegate(base.singleton_class)
+      base.include(Lock)
+      base.extend(Lock)
     end
     
     protected

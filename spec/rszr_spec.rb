@@ -138,15 +138,54 @@ RSpec.describe 'Rszr' do
     end
     
   end
-  
+
   context 'Garbage collection' do
     
     it 'releases instances' do
+      GC.start
+      expect(ObjectSpace.each_object(Rszr::Image).count).to eq(0)
       20.times { Rszr::Image.load(RSpec.root.join('images/bacon.png')) }
       expect(ObjectSpace.each_object(Rszr::Image).count).to be > 0
       GC.start
       expect(ObjectSpace.each_object(Rszr::Image).count).to eq(0)
     end
     
+  end
+
+  context 'Threading' do
+
+    def data
+      @data ||= RSpec.root.join('images', 'bacon.png').binread.freeze
+    end
+
+    def resize
+      image = nil
+      Tempfile.open('src') do |file|
+        file.binmode
+        file.write data
+        image = Rszr::Image.load(file.path)
+        file.close(true)
+      end
+      image.resize!(200, :auto)
+      Tempfile.open('dst') do |file|
+        image.save(file.path)
+        file.close(true)
+      end
+    end
+
+    it 'synchronizes access to imlib2 context' do
+      threads = []
+      10.times do |t|
+        threads << Thread.new do
+          100.times do |i|
+            print '.' # puts "    #{t}/#{i}"
+            resize
+          end
+        end
+      end
+      threads.each(&:join)
+      puts
+    end
+
   end
 end

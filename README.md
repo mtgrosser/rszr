@@ -66,12 +66,17 @@ image.height => 300
 image.dimensions => [400, 300]
 ```
 
+## Thread safety
+
+As of version 0.4.0, Rszr provides thread safety by synchronizing access to imlib2 function calls.
+Use of any previous versions in a threaded environment is discouraged.
+
 ## Speed
 
 Resizing an 1500x997 JPEG image to 800x532, 100 times:
 
 Library         | Time
 ----------------|-----------
-MiniMagick      | 11.4 s
-GD2             | 7.2 s
-Rszr            | 3.2 s
+MiniMagick      | 12.9 s
+GD2             | 7.5 s
+Rszr            | 2.8 s

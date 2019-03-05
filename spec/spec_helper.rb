@@ -81,6 +81,7 @@ end
 
 require 'rszr'
 require 'byebug'
+require 'tempfile'
 require 'tmpdir'
 
 RSpec.class_eval do
