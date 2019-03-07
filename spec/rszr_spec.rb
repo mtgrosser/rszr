@@ -113,6 +113,39 @@ RSpec.describe 'Rszr' do
     
   end
   
+  context 'Turning' do
+    
+    before(:each) do
+      @image = Rszr::Image.load(RSpec.root.join('images/test.jpg'))
+    end
+    
+    it 'turns images clockwise' do
+      expect(@image.turn!(3).dimensions).to eq([997, 1500])
+    end
+    
+    it 'turns images counterclockwise' do
+      expect(@image.turn!(-3).dimensions).to eq([997, 1500])
+    end
+    
+    it 'turns images in place' do
+      expect(@image.turn!(3)).to be(@image)
+    end
+    
+  end
+  
+  context 'Duplicating' do
+    
+    before(:each) do
+      @image = Rszr::Image.load(RSpec.root.join('images/test.jpg'))
+    end
+    
+    it 'duplicates images' do
+      expect(@image.dup).not_to be(@image)
+      expect(@image.dup.dimensions).to eq(@image.dimensions)
+    end
+    
+  end
+  
   context 'Saving' do
     
     before(:each) do

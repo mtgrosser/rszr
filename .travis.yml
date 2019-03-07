@@ -3,3 +3,7 @@ language: ruby
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libimlib2 libimlib2-dev
+
+before_script:
+  - rake clean
+  - rake compile

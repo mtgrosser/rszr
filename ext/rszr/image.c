@@ -7,11 +7,13 @@
 
 VALUE cImage = Qnil;
 
+
 static void rszr_free_image(Imlib_Image image)
 {
   imlib_context_set_image(image);
   imlib_free_image();
 }
+
 
 static void rszr_image_deallocate(rszr_image_handle * handle)
 {
@@ -25,11 +27,13 @@ static void rszr_image_deallocate(rszr_image_handle * handle)
   // fprintf(stderr, "\n");
 }
 
+
 static VALUE rszr_image_s_allocate(VALUE klass)
 {
   rszr_image_handle * handle = calloc(1, sizeof(rszr_image_handle));
   return Data_Wrap_Struct(klass, NULL, rszr_image_deallocate, handle);
 }
+
 
 static VALUE rszr_image_initialize(VALUE self, VALUE rb_width, VALUE rb_height)
 {
@@ -44,6 +48,7 @@ static VALUE rszr_image_initialize(VALUE self, VALUE rb_width, VALUE rb_height)
 
   return self;
 }
+
 
 static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path)
 {
@@ -69,6 +74,7 @@ static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path)
   return oImage;
 }
 
+
 static VALUE rszr_image_format(VALUE self)
 {
   rszr_image_handle * handle;
@@ -86,6 +92,7 @@ static VALUE rszr_image_format(VALUE self)
   }
 }
 
+
 static VALUE rszr_image_width(VALUE self)
 {
   rszr_image_handle * handle;
@@ -98,6 +105,7 @@ static VALUE rszr_image_width(VALUE self)
   
   return INT2NUM(width);
 }
+
 
 static VALUE rszr_image_height(VALUE self)
 {
@@ -112,34 +120,47 @@ static VALUE rszr_image_height(VALUE self)
   return INT2NUM(height);
 }
 
-/*
-static VALUE rszr_image_replace(VALUE self, VALUE rb_other)
+
+static VALUE rszr_image_dup(VALUE self)
 {
   rszr_image_handle * handle;
-  rszr_image_handle * other_handle;
-  
-  if (CLASS_OF(rb_other) != cImage) {
-    rb_raise(rb_eArgError, "Rszr::Image required, got %s", rb_obj_classname(rb_other));
-  }
+  rszr_image_handle * cloned_handle;
+  Imlib_Image cloned_image;
+  VALUE oClonedImage;
   
   Data_Get_Struct(self, rszr_image_handle, handle);
-  Data_Get_Struct(rb_other, rszr_image_handle, other_handle);
+  
+  imlib_context_set_image(handle->image);
+  cloned_image = imlib_clone_image();
+  
+  if (!cloned_image) {
+    rb_raise(eRszrTransformationError, "error cloning image");
+    return Qnil;
+  }
+  
+  oClonedImage = rszr_image_s_allocate(cImage);
+  Data_Get_Struct(oClonedImage, rszr_image_handle, cloned_handle);
+  cloned_handle->image = cloned_image;
+
+  return oClonedImage;
+}
+
+
+static VALUE rszr_image__turn_bang(VALUE self, VALUE orientation)
+{
+  rszr_image_handle * handle;
+
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
+  imlib_context_set_image(handle->image);
+  imlib_image_orientate(NUM2INT(orientation));
   
   return self;
 }
-*/
 
-/*
-static VALUE rszr_image_turn(VALUE self, VALUE orientation)
-{
-  // void imlib_image_orientate(int orientation)
-  return self;
-}
-*/
 
-static Imlib_Image rszr_create_cropped_scaled_image(VALUE self, VALUE rb_src_x, VALUE rb_src_y, VALUE rb_src_w, VALUE rb_src_h, VALUE rb_dst_w, VALUE rb_dst_h)
+static Imlib_Image rszr_create_cropped_scaled_image(const Imlib_Image image, VALUE rb_src_x, VALUE rb_src_y, VALUE rb_src_w, VALUE rb_src_h, VALUE rb_dst_w, VALUE rb_dst_h)
 {
-  rszr_image_handle * handle;
   Imlib_Image resized_image;
   
   int src_x = NUM2INT(rb_src_x);
@@ -151,9 +172,7 @@ static Imlib_Image rszr_create_cropped_scaled_image(VALUE self, VALUE rb_src_x, 
 
   // TODO: raise if <= 0
 
-  Data_Get_Struct(self, rszr_image_handle, handle);
-  
-  imlib_context_set_image(handle->image);
+  imlib_context_set_image(image);
   imlib_context_set_anti_alias(1);
   resized_image = imlib_create_cropped_scaled_image(src_x, src_y, src_w, src_h, dst_w, dst_h);
   
@@ -165,23 +184,8 @@ static Imlib_Image rszr_create_cropped_scaled_image(VALUE self, VALUE rb_src_x, 
   return resized_image;
 }
 
-static VALUE rszr_image__resize_bang(VALUE self, VALUE rb_src_x, VALUE rb_src_y, VALUE rb_src_w, VALUE rb_src_h, VALUE rb_dst_w, VALUE rb_dst_h)
-{
-  rszr_image_handle * handle;
-  Imlib_Image resized_image;
 
-  Data_Get_Struct(self, rszr_image_handle, handle);
-  
-  resized_image = rszr_create_cropped_scaled_image(self, rb_src_x, rb_src_y, rb_src_w, rb_src_h, rb_dst_w, rb_dst_h);
-  if (!resized_image) return Qfalse;
-  
-  rszr_free_image(handle->image);
-  handle->image = resized_image;
-  
-  return self;
-}
-
-static VALUE rszr_image__resize(VALUE self, VALUE rb_src_x, VALUE rb_src_y, VALUE rb_src_w, VALUE rb_src_h, VALUE rb_dst_w, VALUE rb_dst_h)
+static VALUE rszr_image__resize(VALUE self, VALUE bang, VALUE rb_src_x, VALUE rb_src_y, VALUE rb_src_w, VALUE rb_src_h, VALUE rb_dst_w, VALUE rb_dst_h)
 {
   rszr_image_handle * handle;
   Imlib_Image resized_image;
@@ -190,15 +194,73 @@ static VALUE rszr_image__resize(VALUE self, VALUE rb_src_x, VALUE rb_src_y, VALU
 
   Data_Get_Struct(self, rszr_image_handle, handle);
   
-  resized_image = rszr_create_cropped_scaled_image(self, rb_src_x, rb_src_y, rb_src_w, rb_src_h, rb_dst_w, rb_dst_h);
+  resized_image = rszr_create_cropped_scaled_image(handle->image, rb_src_x, rb_src_y, rb_src_w, rb_src_h, rb_dst_w, rb_dst_h);
   if (!resized_image) return Qfalse;
   
-  oResizedImage = rszr_image_s_allocate(cImage);
-  Data_Get_Struct(oResizedImage, rszr_image_handle, resized_handle);
-  resized_handle->image = resized_image;
+  if (RTEST(bang)) {
+    rszr_free_image(handle->image);
+    handle->image = resized_image;
+    
+    return self;
+  }
+  else {
+    oResizedImage = rszr_image_s_allocate(cImage);
+    Data_Get_Struct(oResizedImage, rszr_image_handle, resized_handle);
+    resized_handle->image = resized_image;
   
-  return oResizedImage;
+    return oResizedImage;
+  }
 }
+
+
+static Imlib_Image rszr_create_cropped_image(const Imlib_Image image, VALUE rb_x, VALUE rb_y, VALUE rb_w, VALUE rb_h)
+{
+  Imlib_Image cropped_image;
+  
+  int x = NUM2INT(rb_x);
+  int y = NUM2INT(rb_y);
+  int w = NUM2INT(rb_w);
+  int h = NUM2INT(rb_h);
+  
+  imlib_context_set_image(image);
+  cropped_image = imlib_create_cropped_image(x, y, w, h);
+  
+  if (!cropped_image) {
+    rb_raise(eRszrTransformationError, "error cropping image");
+    return NULL;
+  }
+  
+  return cropped_image;
+}
+
+
+static VALUE rszr_image__crop(VALUE self, VALUE bang, VALUE rb_x, VALUE rb_y, VALUE rb_w, VALUE rb_h)
+{
+  rszr_image_handle * handle;
+  Imlib_Image cropped_image;
+  rszr_image_handle * cropped_handle;
+  VALUE oCroppedImage;
+
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
+  cropped_image = rszr_create_cropped_image(handle->image, rb_x, rb_y, rb_w, rb_h);
+  if (!cropped_image) return Qfalse;
+  
+  if (RTEST(bang)) {
+    rszr_free_image(handle->image);
+    handle->image = cropped_image;
+    
+    return self;
+  }
+  else {
+    oCroppedImage = rszr_image_s_allocate(cImage);
+    Data_Get_Struct(oCroppedImage, rszr_image_handle, cropped_handle);
+    cropped_handle->image = cropped_image;
+  
+    return oCroppedImage;
+  }
+}
+
 
 static VALUE rszr_image__save(VALUE self, VALUE rb_path, VALUE rb_format)
 {
@@ -237,9 +299,11 @@ void Init_rszr_image()
   rb_define_method(cImage, "width",       rszr_image_width, 0);
   rb_define_method(cImage, "height",      rszr_image_height, 0);
   rb_define_method(cImage, "format",      rszr_image_format, 0);
-  rb_define_private_method(cImage, "_resize!", rszr_image__resize, 6);
-  rb_define_private_method(cImage, "_resize",  rszr_image__resize, 6);
-  rb_define_private_method(cImage, "_save",     rszr_image__save, 2);
+  rb_define_method(cImage, "dup",         rszr_image_dup, 0);
+  rb_define_private_method(cImage, "_resize",  rszr_image__resize, 7);
+  rb_define_private_method(cImage, "_crop",    rszr_image__crop, 5);
+  rb_define_private_method(cImage, "_turn!",   rszr_image__turn_bang, 1);
+  rb_define_private_method(cImage, "_save",    rszr_image__save, 2);
 }
 
 #endif

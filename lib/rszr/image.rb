@@ -23,26 +23,31 @@ module Rszr
     end
 
     def resize(*args)
-      _resize(*calculate_size(*args))
+      _resize(false, *calculate_size(*args))
     end
 
     def resize!(*args)
-      _resize!(*calculate_size(*args))
+      _resize(true, *calculate_size(*args))
     end
 
-    #def crop(*args)
-    #  #instantiate(create_cropped_image(*args))
-    #end
+    def crop(x, y, width, height)
+      _crop(false, x, y, width, height)
+    end
 
-    #def crop!(*args)
-    #  #replace!(create_cropped_image(*args))
-    #end
-    
+    def crop!(x, y, width, height)
+      _crop(true, x, y, width, height)
+    end
+
+    def turn!(orientation)
+      orientation = orientation.abs + 2 if orientation.negative?
+      _turn!(orientation % 4)
+    end
+
     def save(path, format = nil)
       format ||= format_from_filename(path) || 'jpg'
       _save(path.to_s, format.to_s)
     end
-    
+
     private
     
     # 0.5               0 < scale < 1
@@ -106,11 +111,5 @@ module Rszr
       end
     end
     
-    #def create_cropped_image(x, y, width, height)
-    #  cropped_ptr = with_image { imlib_create_cropped_image(x, y, width, height) }
-    #  raise TransformationError, 'error cropping image' if cropped_ptr.null?
-    #  cropped_ptr
-    #end
-
   end
 end
