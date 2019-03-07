@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.licenses      = %w[MIT]
   s.homepage      = 'https://github.com/mtgrosser/rszr'
 
-  s.files         = Dir['{lib}/**/*.rb', 'LICENSE', 'README.md', 'Rakefile']
+  s.files         = Dir['{lib,ext}/**/*.{rb,h,c}', 'LICENSE', 'README.md', 'Rakefile']
   s.require_paths = %w[lib ext]
   s.extensions    = %w[ext/rszr/extconf.rb]
 

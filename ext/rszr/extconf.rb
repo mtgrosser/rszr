@@ -15,4 +15,4 @@ unless find_library('Imlib2', 'imlib_set_cache_size')
   abort 'Imlib2 is missing'
 end
 
-create_makefile 'rszr'
+create_makefile 'rszr/rszr'
