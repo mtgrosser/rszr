@@ -14,14 +14,16 @@ Benchmark.bm(100) do |x|
       image = MiniMagick::Image.open(original.to_s)
       image.resize '800x532'
       image.write resized.to_s
+      image = nil
     end
   end
-
+  
   x.report 'GD2' do
     ITERATIONS.times do
       image = GD2::Image.import(original.to_s)
       image.resize! 800, 532
       image.export resized.to_s
+      image = nil
     end
   end
   
@@ -30,6 +32,7 @@ Benchmark.bm(100) do |x|
       image = Rszr::Image.load(original.to_s)
       image.resize! 800, 532
       image.save resized.to_s
+      image = nil
     end
   end
 end

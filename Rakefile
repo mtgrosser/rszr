@@ -9,3 +9,9 @@ begin
 rescue LoadError
   # no rspec available
 end
+
+require 'rake/extensiontask'
+
+Rake::ExtensionTask.new('rszr') do |ext|
+  ext.lib_dir = 'lib/rszr'
+end

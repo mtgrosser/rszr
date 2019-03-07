@@ -1,12 +1,6 @@
-require 'fiddle'
-require 'fiddle/import'
 require 'rbconfig'
 require 'pathname'
 
+require 'rszr/rszr'
 require 'rszr/version'
-require 'rszr/errors'
-require 'rszr/lib'
-require 'rszr/lock'
-require 'rszr/handle'
-require 'rszr/base'
 require 'rszr/image'
