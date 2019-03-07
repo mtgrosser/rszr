@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
 
   s.files         = Dir['{lib}/**/*.rb', 'LICENSE', 'README.md', 'Rakefile']
   s.require_paths = %w[lib ext]
+  s.extensions    = %w[ext/rszr/extconf.rb]
 
   s.add_development_dependency 'bundler', '~> 1.9'
   s.add_development_dependency 'rake', '~> 10.0'
