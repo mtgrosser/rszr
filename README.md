@@ -45,6 +45,9 @@ image.resize(400, 300)
 # save it
 image.save('resized.jpg')
 
+# save it as PNG
+image.save('resized.png')
+
 # auto height
 image.resize(400, :auto)
 
@@ -57,18 +60,28 @@ image.resize(0.5)
 # crop
 image.crop(200, 200, 100, 100)
 
+# rotate three times 90 deg clockwise
+image.turn!(3)
+
+# rotate one time 90 deg counterclockwise
+image.turn!(-1)
+
+# initialize copy
+image.dup
+
 # save memory, do not duplicate instance
 image.resize!(400, :auto)
 
-# image dimensions
+# image info
 image.width => 400
 image.height => 300
 image.dimensions => [400, 300]
+image.format => "jpeg"
 ```
 
 ## Thread safety
 
-As of version 0.4.0, Rszr provides thread safety by synchronizing access to imlib2 function calls.
+As of version 0.4.0, Rszr is thread safe through the Ruby GIL.
 Use of any previous versions in a threaded environment is discouraged.
 
 ## Speed
