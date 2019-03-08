@@ -81,7 +81,7 @@ image.format => "jpeg"
 
 ## Thread safety
 
-As of version 0.4.0, Rszr is thread safe through the Ruby GIL.
+As of version 0.5.0, Rszr is thread safe through Ruby's global VM lock.
 Use of any previous versions in a threaded environment is discouraged.
 
 ## Speed
