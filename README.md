@@ -138,4 +138,4 @@ GD2             | 28.2 s
 VIPS            | 13.6 s
 Rszr            |  7.9 s
 
-[[https://github.com/mtgrosser/rszr/blob/master/benchmark/speed.png|alt=Speed]]
+[![Speed](https://github.com/mtgrosser/rszr/blob/master/benchmark/speed.png)]
