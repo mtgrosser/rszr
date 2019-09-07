@@ -1,4 +1,4 @@
-RSpec.describe 'Rszr' do
+RSpec.describe 'Rszr image processing' do
 
   it 'has a version number' do
     expect(Rszr::VERSION).to_not be_nil

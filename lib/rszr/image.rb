@@ -3,7 +3,7 @@ module Rszr
 
     class << self
       
-      def load(path, options = {})
+      def load(path, **opts)
         path = path.to_s
         raise FileNotFound unless File.exist?(path)
         _load(path)
@@ -15,6 +15,11 @@ module Rszr
     def dimensions
       [width, height]
     end
+    
+    def format=(fmt)
+      fmt = fmt.to_s if fmt.is_a?(Symbol)
+      self._format = fmt
+    end
 
     def inspect
       fmt = format
@@ -22,30 +27,65 @@ module Rszr
       "#<#{self.class.name}:0x#{object_id.to_s(16)} #{width}x#{height}#{fmt}>"
     end
 
-    def resize(*args)
-      _resize(false, *calculate_size(*args))
-    end
+    module Transformations
+      def resize(*args)
+        _resize(false, *calculate_size(*args))
+      end
 
-    def resize!(*args)
-      _resize(true, *calculate_size(*args))
-    end
+      def resize!(*args)
+        _resize(true, *calculate_size(*args))
+      end
 
-    def crop(x, y, width, height)
-      _crop(false, x, y, width, height)
-    end
+      def crop(x, y, width, height)
+        _crop(false, x, y, width, height)
+      end
 
-    def crop!(x, y, width, height)
-      _crop(true, x, y, width, height)
-    end
+      def crop!(x, y, width, height)
+        _crop(true, x, y, width, height)
+      end
+    
+      def turn(orientation)
+        dup.turn!(orientation)
+      end
 
-    def turn!(orientation)
-      orientation = orientation.abs + 2 if orientation.negative?
-      _turn!(orientation % 4)
+      def turn!(orientation)
+        orientation = orientation.abs + 2 if orientation.negative?
+        _turn!(orientation % 4)
+      end
+    
+      def rotate(deg)
+        _rotate(false, deg.to_f * Math::PI / 180.0)
+      end
+    
+      def rotate!(deg)
+        _rotate(true, deg.to_f * Math::PI / 180.0)
+      end
+    
+      def sharpen(radius)
+        dup.sharpen!(radius)
+      end
+    
+      def sharpen!(radius)
+        raise ArgumentError, 'illegal radius' if radius < 0
+        _sharpen!(radius)
+      end
+    
+      def blur(radius)
+        dup.blur!(radius)
+      end
+    
+      def blur!(radius)
+        raise ArgumentError, 'illegal radius' if radius < 0
+        _sharpen!(-radius)
+      end
     end
+    
+    include Transformations
 
-    def save(path, format = nil)
-      format ||= format_from_filename(path) || 'jpg'
-      _save(path.to_s, format.to_s)
+    def save(path, format: nil, quality: nil)
+      format ||= format_from_filename(path) || self.format || 'jpg'
+      raise ArgumentError, "invalid quality #{quality.inspect}" if quality && !(0..100).cover?(quality)
+      _save(path.to_s, format.to_s, quality)
     end
 
     private
@@ -56,7 +96,7 @@ module Rszr
     # :auto, 300        auto width, fit height
     # 400, 300, crop: :center_middle
     # 400, 300, background: rgba
-    # 400, 300, aspect: false
+    # 400, 300, skew: true
     
     def calculate_size(*args)
       options = args.last.is_a?(Hash) ? args.pop : {}

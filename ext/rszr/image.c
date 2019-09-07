@@ -75,7 +75,7 @@ static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path)
 }
 
 
-static VALUE rszr_image_format(VALUE self)
+static VALUE rszr_image_format_get(VALUE self)
 {
   rszr_image_handle * handle;
   char * format;
@@ -90,6 +90,20 @@ static VALUE rszr_image_format(VALUE self)
   } else {
     return Qnil;
   }
+}
+
+
+static VALUE rszr_image__format_set(VALUE self, VALUE rb_format)
+{
+  rszr_image_handle * handle;
+  char * format = StringValueCStr(rb_format);
+  
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
+  imlib_context_set_image(handle->image);
+  imlib_image_set_format(format);
+  
+  return self;
 }
 
 
@@ -120,6 +134,44 @@ static VALUE rszr_image_height(VALUE self)
   return INT2NUM(height);
 }
 
+/*
+static VALUE rszr_image_get_quality(VALUE self)
+{
+  rszr_image_handle * handle;
+  int quality;
+  
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
+  imlib_context_set_image(handle->image);
+  quality = imlib_image_get_attached_value("quality");
+  
+  if (quality) {
+    return INT2NUM(quality);
+  } else {
+    return Qnil;
+  }
+}
+
+static VALUE rszr_image_set_quality(VALUE self, VALUE rb_quality)
+{
+  rszr_image_handle * handle;
+  int quality;
+  
+  Check_Type(rb_quality, T_FIXNUM);
+  quality = FIX2INT(rb_quality);
+  if (quality <= 0) {
+    rb_raise(rb_eArgError, "quality must be >= 0");
+    return Qnil;
+  }
+  
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
+  imlib_context_set_image(handle->image);
+  imlib_image_attach_data_value("quality", NULL, quality, NULL);
+  
+  return INT2NUM(quality);
+}
+*/
 
 static VALUE rszr_image_dup(VALUE self)
 {
@@ -154,6 +206,62 @@ static VALUE rszr_image__turn_bang(VALUE self, VALUE orientation)
   
   imlib_context_set_image(handle->image);
   imlib_image_orientate(NUM2INT(orientation));
+  
+  return self;
+}
+
+
+static VALUE rszr_image__rotate(VALUE self, VALUE bang, VALUE rb_angle)
+{
+  rszr_image_handle * handle;
+  rszr_image_handle * rotated_handle;
+  Imlib_Image rotated_image;
+  VALUE oRotatedImage;
+  double angle;
+  
+  angle = NUM2DBL(rb_angle);
+  
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
+  imlib_context_set_image(handle->image);
+  rotated_image = imlib_create_rotated_image(angle);
+  
+  if (!rotated_image) {
+    rb_raise(eRszrTransformationError, "error rotating image");
+    return Qnil;
+  }
+  
+  if (RTEST(bang)) {
+    rszr_free_image(handle->image);
+    handle->image = rotated_image;
+    
+    return self;
+  }
+  else {
+    oRotatedImage = rszr_image_s_allocate(cImage);
+    Data_Get_Struct(oRotatedImage, rszr_image_handle, rotated_handle);
+    rotated_handle->image = rotated_image;
+  
+    return oRotatedImage;
+  }
+}
+
+
+static VALUE rszr_image__sharpen_bang(VALUE self, VALUE rb_radius)
+{
+  rszr_image_handle * handle;
+  int radius;
+  
+  radius = NUM2INT(rb_radius);
+  
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
+  imlib_context_set_image(handle->image);
+  if (radius >= 0) {
+    imlib_image_sharpen(radius);
+  } else {
+    imlib_image_blur(radius);
+  }
   
   return self;
 }
@@ -262,20 +370,24 @@ static VALUE rszr_image__crop(VALUE self, VALUE bang, VALUE rb_x, VALUE rb_y, VA
 }
 
 
-static VALUE rszr_image__save(VALUE self, VALUE rb_path, VALUE rb_format)
+static VALUE rszr_image__save(VALUE self, VALUE rb_path, VALUE rb_format, VALUE rb_quality)
 {
   rszr_image_handle * handle;
   char * path;
   char * format;
+  int quality;
   Imlib_Load_Error save_error;
   
   path = StringValueCStr(rb_path);
   format = StringValueCStr(rb_format);
-  
+  quality = (NIL_P(rb_quality)) ? 0 : FIX2INT(rb_quality);
+
   Data_Get_Struct(self, rszr_image_handle, handle);
   
   imlib_context_set_image(handle->image);
   imlib_image_set_format(format);
+  if (quality)
+    imlib_image_attach_data_value("quality", NULL, quality, NULL);
   imlib_save_image_with_error_return(path, &save_error);
   
   if (save_error) {
@@ -298,12 +410,19 @@ void Init_rszr_image()
   rb_define_method(cImage, "initialize",  rszr_image_initialize, 2);
   rb_define_method(cImage, "width",       rszr_image_width, 0);
   rb_define_method(cImage, "height",      rszr_image_height, 0);
-  rb_define_method(cImage, "format",      rszr_image_format, 0);
+  rb_define_method(cImage, "format",      rszr_image_format_get, 0);
   rb_define_method(cImage, "dup",         rszr_image_dup, 0);
+  // rb_define_method(cImage, "quality",     rszr_image_get_quality, 0);
+  // rb_define_method(cImage, "quality=",    rszr_image_set_quality, 1);
+  
+  rb_define_protected_method(cImage, "_format=", rszr_image__format_set, 1);
+  
   rb_define_private_method(cImage, "_resize",  rszr_image__resize, 7);
   rb_define_private_method(cImage, "_crop",    rszr_image__crop, 5);
   rb_define_private_method(cImage, "_turn!",   rszr_image__turn_bang, 1);
-  rb_define_private_method(cImage, "_save",    rszr_image__save, 2);
+  rb_define_private_method(cImage, "_rotate",  rszr_image__rotate, 2);
+  rb_define_private_method(cImage, "_sharpen!",   rszr_image__sharpen_bang, 1);
+  rb_define_private_method(cImage, "_save",       rszr_image__save, 3);
 }
 
 #endif

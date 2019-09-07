@@ -1,6 +1,12 @@
 require 'simplecov'
 SimpleCov.start
 
+module HelperMethods
+  def fixture_image(name)
+    RSpec.root.join('images', name)
+  end  
+end
+
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
@@ -24,6 +30,8 @@ RSpec.configure do |config|
     # `true` in RSpec 4.
     mocks.verify_partial_doubles = true
   end
+  
+  config.include HelperMethods
 
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.
@@ -83,6 +91,18 @@ require 'rszr'
 require 'byebug'
 require 'tempfile'
 require 'tmpdir'
+
+RSpec::Matchers.define :have_format do |expected|
+  match do |actual|
+    Rszr::Image.load(actual).format == expected
+  end
+end
+
+RSpec::Matchers.define :have_dimensions do |expected_width, expected_height|
+  match do |actual|
+    actual.dimensions == [expected_width, expected_height]
+  end
+end
 
 RSpec.class_eval do
   def self.root
