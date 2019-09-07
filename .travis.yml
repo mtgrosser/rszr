@@ -5,5 +5,5 @@ before_install:
   - sudo apt-get install -y libimlib2 libimlib2-dev
 
 before_script:
-  - rake clean
-  - rake compile
+  - bundle exec rake clean
+  - bundle exec rake compile
