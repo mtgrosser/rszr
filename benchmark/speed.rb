@@ -4,7 +4,7 @@ require 'fileutils'
 require 'rszr'
 require 'mini_magick'
 require 'gd2-ffij'
-
+require 'vips'
 
 def root
   Pathname.new(__FILE__).dirname
@@ -34,7 +34,7 @@ Benchmark.bm(100) do |x|
       image = nil
     end
   end
-  
+
   x.report 'GD2' do
     ITERATIONS.times do |i|
       image = GD2::Image.import(work_path("#{i}.jpg").to_s)
@@ -43,7 +43,16 @@ Benchmark.bm(100) do |x|
       image = nil
     end
   end
-  
+
+  x.report 'Vips' do
+    ITERATIONS.times do |i|
+      image = Vips::Image.new_from_file(work_path("#{i}.jpg").to_s)
+      image = image.thumbnail_image(WIDTH, height: HEIGHT)
+      image.jpegsave(resized.to_s)
+      image = nil
+    end
+  end
+
   x.report 'Rszr' do
     ITERATIONS.times do |i|
       image = Rszr::Image.load(work_path("#{i}.jpg").to_s)
