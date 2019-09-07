@@ -47,7 +47,15 @@ image.save('resized.jpg')
 
 # save it as PNG
 image.save('resized.png')
+```
 
+### Transformations
+
+For each transformation, there is a bang! and non-bang method.
+The bang method changes the image in place, while the non-bang method
+creates a copy of the image in memory.
+
+```ruby
 # auto height
 image.resize(400, :auto)
 
@@ -66,17 +74,51 @@ image.turn!(3)
 # rotate one time 90 deg counterclockwise
 image.turn!(-1)
 
+# rotate by arbitrary angle
+image.rotate(45)
+
+# sharpen image by pixel radius
+image.sharpen!(1)
+
+# blur image by pixel radius
+image.blur!(1)
+
 # initialize copy
 image.dup
 
 # save memory, do not duplicate instance
 image.resize!(400, :auto)
+```
 
-# image info
+### Image info
+```ruby
 image.width => 400
 image.height => 300
 image.dimensions => [400, 300]
 image.format => "jpeg"
+```
+
+## Rails / ActiveStorage interface
+
+Rszr provides a drop-in interface to the `image_resizing` gem.
+It is faster than `mini_magick` and easier to install than `vips`:
+
+```ruby
+# Gemfile
+gem 'image_resizing'
+gem 'rszr'
+
+# config/initializers/rszr.rb
+require 'rszr/image_processing'
+
+# config/application.rb
+config.active_storage.variant_processor = :rszr
+```
+
+When creating image variants, you can use all of Rszr's transformation methods:
+
+```erb
+<%= image_tag user.avatar.variant(resize_to_fit: [300, 200]) %>
 ```
 
 ## Thread safety

@@ -78,6 +78,12 @@ module Rszr
         raise ArgumentError, 'illegal radius' if radius < 0
         _sharpen!(-radius)
       end
+      
+      # TODO
+      #def brighten!(brightness)
+      #  raise ArgumentError, 'illegal brightness' if brightness > 1 || brightness < -1
+      #  _brighten!(brightness)
+      #end
     end
     
     include Transformations
