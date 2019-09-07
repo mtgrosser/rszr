@@ -102,7 +102,7 @@ image.format => "jpeg"
 ## Rails / ActiveStorage interface
 
 Rszr provides a drop-in interface to the `image_resizing` gem.
-It is faster than `mini_magick` and easier to install than `vips`:
+It is faster than both `mini_magick` and `vips` and way easier to install than the latter.
 
 ```ruby
 # Gemfile
