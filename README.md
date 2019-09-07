@@ -2,7 +2,7 @@
 # Rszr - fast image resizer for Ruby
 
 Rszr is an image resizer for Ruby based on the Imlib2 library.
-It is faster and consumes less memory than MiniMagick, rmagick and GD2, and comes with an optional drop-in interface for Rails ActiveStorage image processing.
+It is faster and consumes less memory than MiniMagick, GD2 and VIPS, and comes with an optional drop-in interface for Rails ActiveStorage image processing.
 
 ## Installation
 
