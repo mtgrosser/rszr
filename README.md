@@ -129,10 +129,11 @@ Use of any previous versions in a threaded environment is discouraged.
 
 ## Speed
 
-Resizing an 1500x997 JPEG image to 800x532, 100 times:
+Resizing an 1500x997 JPEG image to 800x532, 500 times:
 
 Library         | Time
 ----------------|-----------
-MiniMagick      | 12.9 s
-GD2             | 7.5 s
-Rszr            | 2.8 s
+MiniMagick      | 27.0 s
+GD2             | 28.0 s
+Vips            | 13.5 s
+Rszr            | 8.0 s

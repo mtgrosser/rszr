@@ -27,5 +27,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'image_processing'
   s.add_development_dependency 'gd2-ffij'
   s.add_development_dependency 'mini_magick'
+  s.add_development_dependency 'ruby-vips'
   s.add_development_dependency 'memory_profiler'
 end

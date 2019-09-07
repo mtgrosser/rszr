@@ -14,16 +14,17 @@ def work_path(name)
   root.join('work', name)
 end
 
-ITERATIONS = 100
+ITERATIONS = 500
 ORIGINAL = root.join('..', 'spec', 'images', 'test.jpg').to_s
 WIDTH = 800
 HEIGHT = 532
 
 puts 'Preparing ...'
+FileUtils.mkdir root.join('work') unless root.join('work').directory?
 (1..ITERATIONS).each { |i| FileUtils.cp ORIGINAL, work_path("#{i - 1}.jpg") }
 
 Benchmark.bm(100) do |x|
-  
+
   resized = Pathname.new(__FILE__).dirname.join('output.jpg')
 
   x.report 'MiniMagick' do

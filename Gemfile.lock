@@ -58,6 +58,7 @@ DEPENDENCIES
   rake-compiler
   rspec
   rszr!
+  ruby-vips
   simplecov
 
 BUNDLED WITH
