@@ -19,7 +19,7 @@ GEM
     memory_profiler (0.9.12)
     mini_magick (4.9.5)
     minitest (5.11.3)
-    rake (10.5.0)
+    rake (13.0.3)
     rake-compiler (1.0.7)
       rake
     rspec (3.8.0)
@@ -47,14 +47,14 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.17)
+  bundler
   byebug
   gd2-ffij
   image_processing
   memory_profiler
   mini_magick
   minitest
-  rake (~> 10.0)
+  rake
   rake-compiler
   rspec
   rszr!
