@@ -28,6 +28,42 @@ static void rszr_image_deallocate(rszr_image_handle * handle)
 }
 
 
+static void rszr_image_autorotate(Imlib_Image image, char * path)
+{
+  ExifData * exifData;
+  ExifByteOrder byteOrder;
+  ExifEntry * exifEntry;
+  int orientation = 0;
+  int turns = 0;
+  
+  exifData = exif_data_new_from_file(path);
+  
+  if (exifData) {
+    byteOrder = exif_data_get_byte_order(exifData);
+    exifEntry = exif_data_get_entry(exifData, EXIF_TAG_ORIENTATION);
+    if (exifEntry) {
+      orientation = exif_get_short(exifEntry->data, byteOrder);
+    }
+  }
+
+  if (orientation < 2 || orientation > 8) return;
+  
+  imlib_context_set_image(image);
+  
+  if (orientation == 2 || orientation == 4 || orientation == 5 || orientation == 7) {
+    imlib_image_flip_horizontal();
+  }
+  
+  if (orientation == 5 || orientation == 6) {
+    imlib_image_orientate(1);
+  } else if (orientation == 3 || orientation == 4) {
+    imlib_image_orientate(2);
+  } else if (orientation == 7 || orientation == 8) {
+    imlib_image_orientate(3);
+  }
+}
+
+
 static VALUE rszr_image_s_allocate(VALUE klass)
 {
   rszr_image_handle * handle = calloc(1, sizeof(rszr_image_handle));
@@ -50,7 +86,7 @@ static VALUE rszr_image_initialize(VALUE self, VALUE rb_width, VALUE rb_height)
 }
 
 
-static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path)
+static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path, VALUE autorotate)
 {
   rszr_image_handle * handle;
   Imlib_Image image;
@@ -67,6 +103,8 @@ static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path)
     rszr_raise_load_error(error);
     return Qnil;
   }
+  
+  if (RTEST(autorotate)) rszr_image_autorotate(image, path);
   
   oImage = rszr_image_s_allocate(cImage);
   Data_Get_Struct(oImage, rszr_image_handle, handle);
@@ -246,7 +284,24 @@ static VALUE rszr_image__rotate(VALUE self, VALUE bang, VALUE rb_angle)
   }
 }
 
-/*
+
+static VALUE rszr_image_filter_bang(VALUE self, VALUE rb_filter_expr)
+{
+  rszr_image_handle * handle;
+  Imlib_Image image;
+  char * filter_expr;
+  
+  filter_expr = StringValueCStr(rb_filter_expr);
+  
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
+  imlib_context_set_image(handle->image);
+  imlib_apply_filter(filter_expr);
+  
+  return self;
+}
+
+
 static VALUE rszr_image__brighten_bang(VALUE self, VALUE rb_brightness)
 {
   rszr_image_handle * handle;
@@ -254,12 +309,14 @@ static VALUE rszr_image__brighten_bang(VALUE self, VALUE rb_brightness)
   
   brightness = NUM2DBL(rb_brightness);
   
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
   imlib_context_set_image(handle->image);
-  imlib_modify_color_modifier_brightness(brightness);
+  imlib_apply_filter("brightness(10);");
   
   return self;
 }
-*/
+
 
 static VALUE rszr_image__sharpen_bang(VALUE self, VALUE rb_radius)
 {
@@ -419,7 +476,7 @@ void Init_rszr_image()
   rb_define_alloc_func(cImage, rszr_image_s_allocate);
 
   // Class methods
-  rb_define_private_method(rb_singleton_class(cImage), "_load", rszr_image_s__load, 1);
+  rb_define_private_method(rb_singleton_class(cImage), "_load", rszr_image_s__load, 2);
 
   // Instance methods
   rb_define_method(cImage, "initialize",  rszr_image_initialize, 2);
@@ -427,6 +484,8 @@ void Init_rszr_image()
   rb_define_method(cImage, "height",      rszr_image_height, 0);
   rb_define_method(cImage, "format",      rszr_image_format_get, 0);
   rb_define_method(cImage, "dup",         rszr_image_dup, 0);
+  rb_define_method(cImage, "filter!",     rszr_image_filter_bang, 1);
+  
   // rb_define_method(cImage, "quality",     rszr_image_get_quality, 0);
   // rb_define_method(cImage, "quality=",    rszr_image_set_quality, 1);
   
@@ -437,7 +496,7 @@ void Init_rszr_image()
   rb_define_private_method(cImage, "_turn!",   rszr_image__turn_bang, 1);
   rb_define_private_method(cImage, "_rotate",  rszr_image__rotate, 2);
   rb_define_private_method(cImage, "_sharpen!",   rszr_image__sharpen_bang, 1);
-  /* rb_define_private_method(cImage, "_brighten!",  rszr_image__brighten_bang, 1); */
+  rb_define_private_method(cImage, "_brighten!",  rszr_image__brighten_bang, 1);
   
   rb_define_private_method(cImage, "_save",       rszr_image__save, 3);
 }

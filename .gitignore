@@ -39,3 +39,5 @@ build/
 /spec/examples.txt
 
 .byebug_history
+
+/lib/rszr/rszr.bundle
