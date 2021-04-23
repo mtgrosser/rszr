@@ -12,7 +12,7 @@ In your Gemfile:
 gem 'rszr'
 ```
 
-### Imlib2
+### Imlib2 and libexif
 
 Rszr requires the `Imlib2` library to do the heavy lifting.
 `libexif` is required for EXIF auto orientation.
