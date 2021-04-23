@@ -99,6 +99,16 @@ image.dimensions => [400, 300]
 image.format => "jpeg"
 ```
 
+### Image auto orientation
+
+```ruby
+# load and autorotate
+image = Rszr::Image.load('image.jpg', autorotate: true)
+
+# auto-rotate by default, for Rails apps put this into an initializer
+Rszr.autorotate = true
+```
+
 ## Rails / ActiveStorage interface
 
 Rszr provides a drop-in interface to the `image_resizing` gem.
