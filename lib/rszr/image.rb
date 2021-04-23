@@ -121,7 +121,7 @@ module Rszr
 
     private
     
-    # 0.5               scale > 0
+    # 0.5               0 < scale < 1
     # 400, 300          fit box
     # 400, :auto        fit width, auto height
     # :auto, 300        auto width, fit height
@@ -129,87 +129,47 @@ module Rszr
     # 400, 300, background: rgba
     # 400, 300, skew: true
     
-    def calculate_size(*args, upsize: false, crop: nil, background: nil, skew: false)
-      case args.size
-      when 1
-        scale_size(args.first)
-      when 2
+    def calculate_size(*args)
+      options = args.last.is_a?(Hash) ? args.pop : {}
+      assert_valid_keys options, :crop, :background, :skew  #:extend, :width, :height, :max_width, :max_height, :box
+      original_width, original_height = width, height
+      x, y, = 0, 0
+      if args.size == 1
+        scale = args.first
+        raise ArgumentError, "scale factor #{scale.inspect} out of range" unless scale > 0 && scale < 1
+        new_width = original_width.to_f * scale
+        new_height = original_height.to_f * scale
+      elsif args.size == 2
         box_width, box_height = args
-        if box_width.is_a?(Numeric) && box_height.is_a?(Numeric)
-          bounding_box_size(box_width, box_height, upsize: upsize, crop: crop, skew: skew)
+        if :auto == box_width && box_height.is_a?(Numeric)
+          new_height = box_height
+          new_width = box_height.to_f / original_height.to_f * original_width.to_f
+        elsif box_width.is_a?(Numeric) && :auto == box_height
+          new_width = box_width
+          new_height = box_width.to_f / original_width.to_f * original_height.to_f
+        elsif box_width.is_a?(Numeric) && box_height.is_a?(Numeric)
+          if options[:skew]
+            new_width, new_height = box_width, box_height
+          elsif options[:crop]
+            # TODO: calculate x, y offset if crop
+          else
+            scale = original_width.to_f / original_height.to_f
+            box_scale = box_width.to_f / box_height.to_f
+            if scale >= box_scale # wider
+              new_width = box_width
+              new_height = original_height.to_f * box_width.to_f / original_width.to_f
+            else # narrower
+              new_height = box_height
+              new_width = original_width.to_f * box_height.to_f / original_height.to_f
+            end
+          end
         else
-          auto_box_size(box_width, box_height, upsize: upsize)
+          raise ArgumentError, "unconclusive arguments #{args.inspect} #{options.inspect}"
         end
       else
         raise ArgumentError, "wrong number of arguments (#{args.size} for 1..2)"
       end
-    end
-    
-    def scale_size(factor)
-      raise ArgumentError, "scale factor #{factor.inspect} out of range" unless factor > 0
-      [0, 0, width, height, (width.to_f * factor).round, (height.to_f * factor).round]
-    end
-    
-    def bounding_box_size(box_width, box_height, upsize: false, crop: nil, skew: false)
-      original_width, original_height = width, height
-      x = y = 0
-      if skew
-        new_width, new_height = box_width, box_height
-      else
-        original_ratio = original_width.to_f / original_height.to_f
-        box_ratio = box_width.to_f / box_height.to_f
-        if original_ratio >= box_ratio # wider than box
-          if original_width < box_width and not upsize
-            new_width, new_height = original_width, original_height
-          elsif crop
-            new_width = box_width
-            new_height = original_height.to_f * box_ratio
-            # TODO x, y
-          else
-            new_width = box_width
-            new_height = box_height
-            x = (original_width - original_width * original_height / new_height) / 2.0
-          end
-        else # narrower than box
-          if box_height > original_height and not upsize
-            new_width, new_height = original_width, original_height
-          elsif crop
-            # TODO
-          else
-            new_height = box_height
-            new_width = original_width.to_f * box_height.to_f / original_height.to_f
-          end
-        end
-      end
-      [0, 0, original_width, original_height, new_width.round, new_height.round]
-    end
-    
-    def crop_box_size(box_width, box_height, upsize: false)
-      original_width, original_height = width, height
-      x = y = 0
-      # TODO
-    end
-    
-    def auto_box_size(box_width, box_height, upsize: false)
-      original_width, original_height = width, height
-      if :auto == box_width && box_height.is_a?(Numeric)
-        if box_height > original_height and not upsize
-          new_width, new_height = original_width, original_height
-        else
-          new_height = box_height
-          new_width = box_height.to_f / original_height.to_f * original_width.to_f
-        end
-      elsif box_width.is_a?(Numeric) && :auto == box_height
-        if box_width > original_width and not upsize
-          new_width, new_height = original_width, original_height
-        else
-          new_width = box_width
-          new_height = box_width.to_f / original_width.to_f * original_height.to_f
-        end
-      else
-        raise ArgumentError, "unconclusive arguments #{box_width} x #{box_height}"
-      end
-      [0, 0, original_width, original_height, new_width.round, new_height.round]
+      [x, y, original_width, original_height, new_width.round, new_height.round]
     end
 
     def format_from_filename(path)
