@@ -1,4 +1,4 @@
-RSpec.describe 'Rszr image processing' do
+RSpec.describe 'Rszr' do
 
   it 'has a version number' do
     expect(Rszr::VERSION).to_not be_nil
@@ -80,7 +80,7 @@ RSpec.describe 'Rszr image processing' do
     end
     
     it 'raises on scale larger than one' do
-      expect { @image.resize(2) }.to raise_error(ArgumentError, 'scale 2 out of range')
+      expect { @image.resize(-0.5) }.to raise_error(ArgumentError, 'scale factor -0.5 out of range')
     end
     
     it 'raises on too many arguments' do
@@ -170,55 +170,17 @@ RSpec.describe 'Rszr image processing' do
       end
     end
     
-  end
-
-  context 'Garbage collection' do
-    
-    it 'releases instances' do
-      10.times { GC.start(full_mark: true, immediate_sweep: true); sleep 0.5; print '.' }
-      expect(ObjectSpace.each_object(Rszr::Image).count).to eq(0)
-      20.times { Rszr::Image.load(RSpec.root.join('images/bacon.png')) }
-      expect(ObjectSpace.each_object(Rszr::Image).count).to be > 0
-      5.times { GC.start(full_mark: true, immediate_sweep: true); sleep 0.5; print '.' }
-      expect(ObjectSpace.each_object(Rszr::Image).count).to eq(0)
+    it 'accepts uppercase extensions' do
+      Dir.mktmpdir do |dir|
+        %w[JPG JPEG PNG].each do |format|
+          resized_file = Pathname.new(File.join(dir, "resized.#{format}"))
+          expect(@image.save(resized_file.to_s)).to be(true)
+          expect(resized_file.exist?).to be(true)
+        end
+      end
     end
     
   end
 
-  context 'Threading' do
-
-    def data
-      @data ||= RSpec.root.join('images', 'bacon.png').binread.freeze
-    end
-
-    def resize
-      Tempfile.open('src') do |src_file|
-        src_file.binmode
-        src_file.write data
-        Rszr::Image.open(src_file.path) do |image|
-          image.resize!(200, :auto)
-          Tempfile.open('dst') do |dst_file|
-            image.save(dst_file.path)
-            dst_file.close(true)
-          end
-        end
-        src_file.close(true)
-      end
-    end
-
-    it 'synchronizes access to imlib2 context by GIL' do
-      threads = []
-      10.times do |t|
-        threads << Thread.new do
-          1000.times do |i|
-            print '.'
-            resize
-          end
-        end
-      end
-      threads.each(&:join)
-      puts
-    end
-
-  end
 end
+

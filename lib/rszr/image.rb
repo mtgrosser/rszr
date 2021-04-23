@@ -1,12 +1,12 @@
 module Rszr
   class Image
-
+    
     class << self
       
-      def load(path, **opts)
+      def load(path, autorotate: Rszr.autorotate, **opts)
         path = path.to_s
         raise FileNotFound unless File.exist?(path)
-        _load(path)
+        _load(path, autorotate)
       end
       alias :open :load
       
@@ -43,7 +43,7 @@ module Rszr
       def crop!(x, y, width, height)
         _crop(true, x, y, width, height)
       end
-    
+      
       def turn(orientation)
         dup.turn!(orientation)
       end
@@ -79,11 +79,36 @@ module Rszr
         _sharpen!(-radius)
       end
       
-      # TODO
-      #def brighten!(brightness)
-      #  raise ArgumentError, 'illegal brightness' if brightness > 1 || brightness < -1
-      #  _brighten!(brightness)
-      #end
+      def filter(filter_expr)
+        dup.filter!(filter_expr)
+      end
+      
+      def brighten!(value, r: nil, g: nil, b: nil, a: nil)
+        raise ArgumentError, 'illegal brightness' if value > 1 || value < -1
+        filter!("colormod(brightness=#{value.to_f});")
+      end
+      
+      def brighten(*args)
+        dup.brighten!(*args)
+      end
+      
+      def contrast!(value, r: nil, g: nil, b: nil, a: nil)
+        raise ArgumentError, 'illegal contrast (must be > 0)' if value < 0
+        filter!("colormod(contrast=#{value.to_f});")
+      end
+      
+      def contrast(*args)
+        dup.contrast!(*args)
+      end
+      
+      def gamma!(value, r: nil, g: nil, b: nil, a: nil)
+        #raise ArgumentError, 'illegal gamma (must be > 0)' if value < 0
+        filter!("colormod(gamma=#{value.to_f});")
+      end
+      
+      def gamma(*args)
+        dup.gamma!(*args)
+      end
     end
     
     include Transformations
@@ -111,7 +136,7 @@ module Rszr
       x, y, = 0, 0
       if args.size == 1
         scale = args.first
-        raise ArgumentError, "scale #{scale.inspect} out of range" unless scale > 0 && scale < 1
+        raise ArgumentError, "scale factor #{scale.inspect} out of range" unless scale > 0 && scale < 1
         new_width = original_width.to_f * scale
         new_height = original_height.to_f * scale
       elsif args.size == 2
@@ -146,9 +171,9 @@ module Rszr
       end
       [x, y, original_width, original_height, new_width.round, new_height.round]
     end
-    
+
     def format_from_filename(path)
-      File.extname(path)[1..-1]
+      File.extname(path)[1..-1].to_s.downcase
     end
 
     def assert_valid_keys(hsh, *valid_keys)

@@ -3,6 +3,7 @@
 
 #include "ruby.h"
 #include <Imlib2.h>
+#include <libexif/exif-data.h>
 
 extern VALUE mRszr;
 void Init_rszr();

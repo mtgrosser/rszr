@@ -47,7 +47,7 @@ module ImageProcessing
         end
 
       end
-
+      
       # Resizes the image to not be larger than the specified dimensions.
       def resize_to_limit(width, height, **options)
         width, height = default_dimensions(width, height)

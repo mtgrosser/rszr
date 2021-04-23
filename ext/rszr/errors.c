@@ -44,7 +44,7 @@ static void rszr_raise_error_with_message(VALUE rb_error_class, Imlib_Load_Error
 {
   int error_index = (int) error - 1;
   if (error_index < 1 || error_index > RSZR_MAX_ERROR_INDEX)
-    error_index = 13;
+    error_index = RSZR_MAX_ERROR_INDEX;
   VALUE rb_error = rb_exc_new2(rb_error_class, sRszrErrorMessages[error_index]);
   rb_exc_raise(rb_error);
 }

@@ -17,10 +17,10 @@ Gem::Specification.new do |s|
   s.require_paths = %w[lib ext]
   s.extensions    = %w[ext/rszr/extconf.rb]
 
-  s.requirements << "Imlib2"
+  s.requirements  = %w[imlib2 libexif]
 
   s.add_development_dependency 'bundler'
-  s.add_development_dependency 'rake', '>= 12.3.3'
+  s.add_development_dependency 'rake', '~> 13.0'
   s.add_development_dependency 'rake-compiler'
   s.add_development_dependency 'byebug'
   s.add_development_dependency 'rspec'
