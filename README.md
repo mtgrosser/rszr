@@ -14,14 +14,15 @@ gem 'rszr'
 
 ### Imlib2
 
-Rszr requires the Imlib2 library to do the heavy lifting.
+Rszr requires the `Imlib2` library to do the heavy lifting.
+`libexif` is required for EXIF auto orientation.
 
 #### OS X
 
 Using homebrew:
 
 ```bash
-brew install imlib2
+brew install imlib2 libexif
 ```
 
 #### Linux
@@ -29,11 +30,11 @@ brew install imlib2
 Using your favourite package manager:
 
 ```bash
-yum install imlib2 imlib2-devel
+yum install imlib2 imlib2-devel libexif libexif-devel
 ```
 
 ```bash
-apt-get install libimlib2 libimlib2-dev
+apt-get install libimlib2 libimlib2-dev libexif libexif-dev
 ```
 
 ## Usage
