@@ -3,6 +3,7 @@
 * EXIF autorotation support
 * GFX filter support
 * Fix error on uppercase file extensions
+* image_processing integration
 
 
 ## Rszr 0.5.3 (March 13, 2021) ##
