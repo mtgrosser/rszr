@@ -34,7 +34,7 @@ yum install imlib2 imlib2-devel libexif libexif-devel
 ```
 
 ```bash
-apt-get install libimlib2 libimlib2-dev libexif libexif-dev
+apt-get install libimlib2 libimlib2-dev libexif12 libexif-dev
 ```
 
 ## Usage
