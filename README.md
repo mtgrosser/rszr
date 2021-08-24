@@ -29,9 +29,15 @@ brew install imlib2 libexif
 
 Using your favourite package manager:
 
+##### RedHat-based
+
 ```bash
 yum install imlib2 imlib2-devel libexif libexif-devel
 ```
+
+In order to install `libexif-devel` on CentOS 8 et al., the `PowerTools` repo needs to be enabled.
+
+##### Debian-based
 
 ```bash
 apt-get install libimlib2 libimlib2-dev libexif12 libexif-dev
