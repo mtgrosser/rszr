@@ -1,4 +1,4 @@
-[![Gem Version](https://badge.fury.io/rb/rszr.svg)](http://badge.fury.io/rb/rszr) [![Build Status](https://travis-ci.org/mtgrosser/rszr.svg)](https://travis-ci.org/mtgrosser/rszr)
+[![Gem Version](https://badge.fury.io/rb/rszr.svg)](http://badge.fury.io/rb/rszr) [![build](https://github.com/mtgrosser/rszr/actions/workflows/build.yml/badge.svg)](https://github.com/mtgrosser/rszr/actions/workflows/build.yml)
 # Rszr - fast image resizer for Ruby
 
 Rszr is an image resizer for Ruby based on the Imlib2 library.
