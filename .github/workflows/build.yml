@@ -22,6 +22,8 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true
-    - name: Set up Imlib2
+    - name: Set up libs
       run: sudo apt-get install -y libimlib2 libimlib2-dev libexif12 libexif-dev
+    - name: Compile extension
+      run: bundle exec rake compile
     - run: bundle exec rake
