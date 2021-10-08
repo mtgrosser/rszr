@@ -28,6 +28,11 @@ module Rszr
       [width, height]
     end
     
+    def format
+      fmt = _format
+      fmt == 'jpg' ? 'jpeg' : fmt
+    end
+    
     def format=(fmt)
       fmt = fmt.to_s if fmt.is_a?(Symbol)
       self._format = fmt

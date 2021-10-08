@@ -74,7 +74,7 @@ static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path)
 }
 
 
-static VALUE rszr_image_format_get(VALUE self)
+static VALUE rszr_image__format_get(VALUE self)
 {
   rszr_image_handle * handle;
   char * format;
@@ -469,7 +469,6 @@ void Init_rszr_image()
   rb_define_method(cImage, "initialize",  rszr_image_initialize, 2);
   rb_define_method(cImage, "width",       rszr_image_width, 0);
   rb_define_method(cImage, "height",      rszr_image_height, 0);
-  rb_define_method(cImage, "format",      rszr_image_format_get, 0);
   rb_define_method(cImage, "dup",         rszr_image_dup, 0);
   rb_define_method(cImage, "filter!",     rszr_image_filter_bang, 1);
   rb_define_method(cImage, "flop!",       rszr_image_flop_bang, 0);
@@ -478,6 +477,7 @@ void Init_rszr_image()
   // rb_define_method(cImage, "quality",     rszr_image_get_quality, 0);
   // rb_define_method(cImage, "quality=",    rszr_image_set_quality, 1);
   
+  rb_define_protected_method(cImage, "_format",  rszr_image__format_get, 0);
   rb_define_protected_method(cImage, "_format=", rszr_image__format_set, 1);
   
   rb_define_private_method(cImage, "_resize",  rszr_image__resize, 7);

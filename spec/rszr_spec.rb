@@ -42,6 +42,11 @@ RSpec.describe 'Rszr' do
       expect(Rszr::Image.load(RSpec.root.join('images/CHUNKY.PNG')).format).to eq('png')
     end
     
+    it 'always return jpeg for JPEG format' do
+      expect(Rszr::Image.load(RSpec.root.join('images/test.jpeg')).format).to eq('jpeg')
+      expect(Rszr::Image.load(RSpec.root.join('images/test.jpg')).format).to eq('jpeg')
+    end
+    
     it 'provide width and height' do
       expect(@image.width).to eq(1500)
       expect(@image.height).to eq(997)
