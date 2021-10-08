@@ -13,7 +13,7 @@ module Rszr
         raise ArgumentError, "data must be File or String, got #{data.class}"
       end
       @data.binmode
-      @data.seek(start, IO::SEEK_CUR)
+      @data.seek(start)
       @pos = 0
     end
     
@@ -33,7 +33,7 @@ module Rszr
     end
 
     def substream
-      self.class.new(self, pos)
+      self.class.new(self, @data.pos)
     end
 
     def fast_forward
