@@ -2,6 +2,7 @@ module Rszr
   class Image
     include Buffered
     extend Identification
+    extend Orientation
     
     class << self
 
