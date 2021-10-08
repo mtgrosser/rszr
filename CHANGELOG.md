@@ -1,7 +1,8 @@
 ## Rszr 0.8.0 (Oct 8, 2021)
 
-* Allow loading binary image data from buffer
+* Allow loading of binary image data from buffer
 * Drop libexif dependency, use Ruby implementation for image orientation
+* Support Ruby 3
 
 ## Rszr 0.7.1 (May 10, 2021)
 
