@@ -17,18 +17,5 @@ Gem::Specification.new do |s|
   s.require_paths = %w[lib ext]
   s.extensions    = %w[ext/rszr/extconf.rb]
 
-  s.requirements  = %w[imlib2 libexif]
-
-  s.add_development_dependency 'bundler'
-  s.add_development_dependency 'rake', '~> 13.0'
-  s.add_development_dependency 'rake-compiler'
-  s.add_development_dependency 'byebug'
-  s.add_development_dependency 'rspec'
-  s.add_development_dependency 'minitest'
-  s.add_development_dependency 'simplecov'
-  s.add_development_dependency 'image_processing'
-  s.add_development_dependency 'gd2-ffij'
-  s.add_development_dependency 'mini_magick'
-  s.add_development_dependency 'ruby-vips'
-  s.add_development_dependency 'memory_profiler'
+  s.requirements  = %w[imlib2]
 end

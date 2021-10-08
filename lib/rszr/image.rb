@@ -1,19 +1,36 @@
 module Rszr
   class Image
+    extend Identification
+    include Buffered
+    include Orientation
     
     class << self
-      
+
       def load(path, autorotate: Rszr.autorotate, **opts)
         path = path.to_s
         raise FileNotFound unless File.exist?(path)
-        _load(path, autorotate)
+        image = _load(path)
+        autorotate(image, path) if autorotate
+        image
       end
       alias :open :load
       
+      def load_data(data, autorotate: Rszr.autorotate, **opts)
+        raise LoadError, 'Unknown format' unless format = identify(data)
+        with_tempfile(format, data) do |file|
+          load(file.path, autorotate: autorotate, **opts)
+        end
+      end
+
     end
 
     def dimensions
       [width, height]
+    end
+    
+    def format
+      fmt = _format
+      fmt == 'jpg' ? 'jpeg' : fmt
     end
     
     def format=(fmt)
@@ -28,12 +45,12 @@ module Rszr
     end
 
     module Transformations
-      def resize(*args)
-        _resize(false, *calculate_size(*args))
+      def resize(*args, **opts)
+        _resize(false, *calculate_size(*args,  **opts))
       end
 
-      def resize!(*args)
-        _resize(true, *calculate_size(*args))
+      def resize!(*args, **opts)
+        _resize(true, *calculate_size(*args, **opts))
       end
 
       def crop(x, y, width, height)
@@ -59,6 +76,16 @@ module Rszr
     
       def rotate!(deg)
         _rotate(true, deg.to_f * Math::PI / 180.0)
+      end
+      
+      # horizontal
+      def flop
+        dup.flop!
+      end
+      
+      # vertical
+      def flip
+        dup.flip!
       end
     
       def sharpen(radius)
@@ -88,8 +115,8 @@ module Rszr
         filter!("colormod(brightness=#{value.to_f});")
       end
       
-      def brighten(*args)
-        dup.brighten!(*args)
+      def brighten(*args, **opts)
+        dup.brighten!(*args, **opts)
       end
       
       def contrast!(value, r: nil, g: nil, b: nil, a: nil)
@@ -97,8 +124,8 @@ module Rszr
         filter!("colormod(contrast=#{value.to_f});")
       end
       
-      def contrast(*args)
-        dup.contrast!(*args)
+      def contrast(*args, **opts)
+        dup.contrast!(*args, **opts)
       end
       
       def gamma!(value, r: nil, g: nil, b: nil, a: nil)
@@ -106,8 +133,8 @@ module Rszr
         filter!("colormod(gamma=#{value.to_f});")
       end
       
-      def gamma(*args)
-        dup.gamma!(*args)
+      def gamma(*args, **opts)
+        dup.gamma!(*args, **opts)
       end
     end
     
@@ -116,7 +143,17 @@ module Rszr
     def save(path, format: nil, quality: nil)
       format ||= format_from_filename(path) || self.format || 'jpg'
       raise ArgumentError, "invalid quality #{quality.inspect}" if quality && !(0..100).cover?(quality)
+      ensure_path_is_writable(path)
       _save(path.to_s, format.to_s, quality)
+    end
+    
+    def save_data(format: nil, quality: nil)
+      format ||= self.format || 'jpg'
+      with_tempfile(format) do |file|
+        save(file.path, format: format, quality: quality)
+        file.rewind
+        file.read
+      end
     end
 
     private
@@ -129,9 +166,9 @@ module Rszr
     # 400, 300, background: rgba
     # 400, 300, skew: true
     
-    def calculate_size(*args)
+    def calculate_size(*args, crop: nil, skew: nil)
       options = args.last.is_a?(Hash) ? args.pop : {}
-      assert_valid_keys options, :crop, :background, :skew  #:extend, :width, :height, :max_width, :max_height, :box
+      #assert_valid_keys options, :crop, :background, :skew  #:extend, :width, :height, :max_width, :max_height, :box
       original_width, original_height = width, height
       x, y, = 0, 0
       if args.size == 1
@@ -148,9 +185,9 @@ module Rszr
           new_width = box_width
           new_height = box_width.to_f / original_width.to_f * original_height.to_f
         elsif box_width.is_a?(Numeric) && box_height.is_a?(Numeric)
-          if options[:skew]
+          if skew
             new_width, new_height = box_width, box_height
-          elsif options[:crop]
+          elsif crop
             # TODO: calculate x, y offset if crop
           else
             scale = original_width.to_f / original_height.to_f
@@ -174,6 +211,15 @@ module Rszr
 
     def format_from_filename(path)
       File.extname(path)[1..-1].to_s.downcase
+    end
+    
+    def ensure_path_is_writable(path)
+      path = Pathname.new(path)
+      path.dirname.realpath.writable?
+    rescue Errno::ENOENT => e
+      raise SaveError, 'Non-existant path component'
+    rescue SystemCallError => e
+      raise SaveError, e.message
     end
 
     def assert_valid_keys(hsh, *valid_keys)

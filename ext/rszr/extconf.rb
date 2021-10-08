@@ -15,11 +15,4 @@ unless find_library('Imlib2', 'imlib_set_cache_size')
   abort 'Imlib2 is missing'
 end
 
-unless find_library('exif', 'exif_data_new_from_file')
-  abort 'libexif is missing'
-end
-
-have_library('exif')
-have_header('libexif/exif-data.h')
-
 create_makefile 'rszr/rszr'
