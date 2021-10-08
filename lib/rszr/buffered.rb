@@ -6,13 +6,13 @@ module Rszr
     
     private
     
-    def with_tempfile(data = nil)
+    def with_tempfile(format, data = nil)
       #ext = File.extname(name)
       result = nil
       #Tempfile.create([File.basename(name, ext), ext], tmpdir) do |file|
       #  result = yield(file)
       #end
-      Tempfile.create(encoding: 'BINARY') do |file|
+      Tempfile.create(['rszr-buffer', ".#{format}"], encoding: 'BINARY') do |file|
         if data
           file.binmode
           file.write data

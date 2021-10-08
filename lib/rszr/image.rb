@@ -1,6 +1,7 @@
 module Rszr
   class Image
     include Buffered
+    extend Identification
     
     class << self
 
@@ -12,7 +13,8 @@ module Rszr
       alias :open :load
       
       def load_data(data, autorotate: Rszr.autorotate, **opts)
-        with_tempfile(data) do |file|
+        raise LoadError, 'Unknown format' unless format = identify(data)
+        with_tempfile(format, data) do |file|
           load(file.path, autorotate: autorotate, **opts)
         end
       end

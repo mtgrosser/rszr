@@ -4,6 +4,7 @@ require 'tempfile'
 
 require 'rszr/rszr'
 require 'rszr/version'
+require 'rszr/identification'
 require 'rszr/buffered'
 require 'rszr/image'
 
