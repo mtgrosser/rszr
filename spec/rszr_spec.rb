@@ -19,7 +19,7 @@ RSpec.describe 'Rszr' do
     end
 
     it 'loads images with uppercase extension' do
-      expect(Rszr::Image.load(RSpec.root.join('images/bacon.png'))).to be_kind_of(Rszr::Image)
+      expect(Rszr::Image.load(RSpec.root.join('images/CHUNKY.PNG'))).to be_kind_of(Rszr::Image)
     end
 
     it 'raises an error when trying to load a non-existing image' do
