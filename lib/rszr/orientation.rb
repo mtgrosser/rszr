@@ -62,9 +62,9 @@ module Rszr
             stream.skip(skip_chars)
             :started
           when :readsize
-            stream.skip(3)
-            height = stream.read_int
-            width = stream.read_int
+            # stream.skip(3)
+            # height = stream.read_int
+            # width = stream.read_int
             return exif&.orientation
           end
         end
