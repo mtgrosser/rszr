@@ -19,6 +19,10 @@ RSpec.describe 'Rszr' do
   it 'can instantiate new images' do
     expect(Rszr::Image.new(300, 400)).to be_kind_of(Rszr::Image)
   end
+  
+  it 'loads image from memory' do
+    expect(Rszr::Image.load_data(RSpec.root.join('images/test.jpg').binread).format).to eq('jpg')
+  end
 
   context 'Images' do
 
@@ -36,7 +40,7 @@ RSpec.describe 'Rszr' do
       expect(@image.height).to eq(997)
     end
     
-  end  
+  end
   
   context 'Resizing' do
 
