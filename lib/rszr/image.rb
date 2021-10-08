@@ -45,12 +45,12 @@ module Rszr
     end
 
     module Transformations
-      def resize(*args)
-        _resize(false, *calculate_size(*args))
+      def resize(*args, **opts)
+        _resize(false, *calculate_size(*args,  **opts))
       end
 
-      def resize!(*args)
-        _resize(true, *calculate_size(*args))
+      def resize!(*args, **opts)
+        _resize(true, *calculate_size(*args, **opts))
       end
 
       def crop(x, y, width, height)
@@ -115,8 +115,8 @@ module Rszr
         filter!("colormod(brightness=#{value.to_f});")
       end
       
-      def brighten(*args)
-        dup.brighten!(*args)
+      def brighten(*args, **opts)
+        dup.brighten!(*args, **opts)
       end
       
       def contrast!(value, r: nil, g: nil, b: nil, a: nil)
@@ -124,8 +124,8 @@ module Rszr
         filter!("colormod(contrast=#{value.to_f});")
       end
       
-      def contrast(*args)
-        dup.contrast!(*args)
+      def contrast(*args, **opts)
+        dup.contrast!(*args, **opts)
       end
       
       def gamma!(value, r: nil, g: nil, b: nil, a: nil)
@@ -133,8 +133,8 @@ module Rszr
         filter!("colormod(gamma=#{value.to_f});")
       end
       
-      def gamma(*args)
-        dup.gamma!(*args)
+      def gamma(*args, **opts)
+        dup.gamma!(*args, **opts)
       end
     end
     

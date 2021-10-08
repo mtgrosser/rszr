@@ -95,7 +95,6 @@ module Rszr
       end
 
       def exif_parse_orientation(stream)
-        start_byte = stream.pos
         short, long = exif_byte_order(stream)
         stream.read(2) # 42
         offset = stream.read(4).unpack(long)[0]

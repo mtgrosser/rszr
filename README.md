@@ -12,17 +12,16 @@ In your Gemfile:
 gem 'rszr'
 ```
 
-### Imlib2 and libexif
+### Imlib2
 
 Rszr requires the `Imlib2` library to do the heavy lifting.
-`libexif` is required for EXIF auto orientation.
 
 #### OS X
 
 Using homebrew:
 
 ```bash
-brew install imlib2 libexif
+brew install imlib2
 ```
 
 #### Linux
@@ -32,15 +31,13 @@ Using your favourite package manager:
 ##### RedHat-based
 
 ```bash
-yum install imlib2 imlib2-devel libexif libexif-devel
+yum install imlib2 imlib2-devel
 ```
-
-In order to install `libexif-devel` on CentOS 8 et al., the `PowerTools` repo needs to be enabled.
 
 ##### Debian-based
 
 ```bash
-apt-get install libimlib2 libimlib2-dev libexif12 libexif-dev
+apt-get install libimlib2 libimlib2-dev
 ```
 
 ## Usage
@@ -55,6 +52,14 @@ image.save('resized.jpg')
 
 # save it as PNG
 image.save('resized.png')
+```
+
+### Image info
+```ruby
+image.width => 400
+image.height => 300
+image.dimensions => [400, 300]
+image.format => "jpeg"
 ```
 
 ### Transformations
@@ -85,11 +90,11 @@ image.turn!(-1)
 # rotate by arbitrary angle
 image.rotate(45)
 
-# sharpen image by pixel radius
-image.sharpen!(1)
+# flip vertically
+image.flip
 
-# blur image by pixel radius
-image.blur!(1)
+# flop horizontally
+image.flop
 
 # initialize copy
 image.dup
@@ -98,20 +103,43 @@ image.dup
 image.resize!(400, :auto)
 ```
 
-### Image info
+### Filters
+
+Filters also support bang! and non-bang methods.
+
 ```ruby
-image.width => 400
-image.height => 300
-image.dimensions => [400, 300]
-image.format => "jpeg"
+# sharpen image by pixel radius
+image.sharpen!(1)
+
+# blur image by pixel radius
+image.blur!(1)
+
+# brighten
+image.brighten(0.1)
+
+# darken
+image.brighten(-0.1)
+
+# contrast
+image.contrast(0.5)
+
+# gamma
+image.gamma(1.1)
 ```
 
 ### Image auto orientation
 
+Auto-rotation is supported for JPEG and TIFF files that include the necessary
+EXIF metadata.
+
 ```ruby
 # load and autorotate
 image = Rszr::Image.load('image.jpg', autorotate: true)
+```
 
+To enable autorotation by default:
+
+```ruby
 # auto-rotate by default, for Rails apps put this into an initializer
 Rszr.autorotate = true
 ```
@@ -137,6 +165,19 @@ When creating image variants, you can use all of Rszr's transformation methods:
 
 ```erb
 <%= image_tag user.avatar.variant(resize_to_fit: [300, 200]) %>
+```
+
+## Loading from and saving to memory
+
+The `Imlib2` library is mainly file-oriented and doesn't provide a way of loading
+the undecoded image from a memory buffer. Therefore, the functionality is
+implemented on the Ruby side of the gem, writing the memory buffer to a Tempfile.
+Currently, this local write cannot be avoided.
+
+```ruby
+image = Rszr::Image.load_data(binary_data)
+
+data = image.save_data(format: :jpeg)
 ```
 
 ## Thread safety
