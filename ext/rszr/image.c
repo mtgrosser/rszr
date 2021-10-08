@@ -60,12 +60,19 @@ static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path)
   path = StringValueCStr(rb_path);
 
   imlib_set_cache_size(0);
-  image = imlib_load_image_with_error_return(path, &error);
+  image = imlib_load_image_without_cache(path);
   
   if (!image) {
-    rszr_raise_load_error(error);
-    return Qnil;
+    image = imlib_load_image_with_error_return(path, &error);
+    
+    if (!image) {
+      rszr_raise_load_error(error);
+      return Qnil;
+    }
   }
+  
+  imlib_context_set_image(image);
+  imlib_image_set_irrelevant_format(0);
   
   oImage = rszr_image_s_allocate(cImage);
   Data_Get_Struct(oImage, rszr_image_handle, handle);
