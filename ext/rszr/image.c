@@ -282,7 +282,6 @@ static VALUE rszr_image__rotate(VALUE self, VALUE bang, VALUE rb_angle)
 static VALUE rszr_image_filter_bang(VALUE self, VALUE rb_filter_expr)
 {
   rszr_image_handle * handle;
-  Imlib_Image image;
   char * filter_expr;
   
   filter_expr = StringValueCStr(rb_filter_expr);
@@ -291,22 +290,6 @@ static VALUE rszr_image_filter_bang(VALUE self, VALUE rb_filter_expr)
   
   imlib_context_set_image(handle->image);
   imlib_apply_filter(filter_expr);
-  
-  return self;
-}
-
-
-static VALUE rszr_image__brighten_bang(VALUE self, VALUE rb_brightness)
-{
-  rszr_image_handle * handle;
-  double brightness;
-  
-  brightness = NUM2DBL(rb_brightness);
-  
-  Data_Get_Struct(self, rszr_image_handle, handle);
-  
-  imlib_context_set_image(handle->image);
-  imlib_apply_filter("brightness(10);");
   
   return self;
 }
@@ -492,7 +475,6 @@ void Init_rszr_image()
   rb_define_private_method(cImage, "_turn!",   rszr_image__turn_bang, 1);
   rb_define_private_method(cImage, "_rotate",    rszr_image__rotate, 2);
   rb_define_private_method(cImage, "_sharpen!",  rszr_image__sharpen_bang, 1);
-  rb_define_private_method(cImage, "_brighten!", rszr_image__brighten_bang, 1);
   
   rb_define_private_method(cImage, "_save",       rszr_image__save, 3);
 }
