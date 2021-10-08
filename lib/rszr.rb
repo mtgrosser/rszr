@@ -1,6 +1,7 @@
 require 'rbconfig'
 require 'pathname'
 require 'tempfile'
+require 'stringio'
 
 require 'rszr/rszr'
 require 'rszr/version'

@@ -7,16 +7,14 @@ module Rszr
     private
     
     def with_tempfile(format, data = nil)
-      #ext = File.extname(name)
+      raise ArgumentError, 'format is required' unless format
       result = nil
-      #Tempfile.create([File.basename(name, ext), ext], tmpdir) do |file|
-      #  result = yield(file)
-      #end
       Tempfile.create(['rszr-buffer', ".#{format}"], encoding: 'BINARY') do |file|
         if data
           file.binmode
-          file.write data
+          file << data
           file.fsync
+          file.rewind
         end
         result = yield(file)
       end

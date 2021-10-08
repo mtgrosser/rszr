@@ -1,30 +1,42 @@
 module Rszr
   class Stream
-    attr_reader :pos
+    attr_reader :pos, :data
+    protected :data
 
-    def initialize(data)
-      @data = data.force_encoding('BINARY')
+    def initialize(data, start: 0)
+      raise ArgumentError, 'start must be > 0' if start < 0
+      @data = case data
+        when IO then data
+        when String then StringIO.new(data)
+        when Stream then data.data
+      else
+        raise ArgumentError, "data must be File or String, got #{data.class}"
+      end
+      @data.binmode
+      @data.seek(start, IO::SEEK_CUR)
       @pos = 0
     end
     
     def read(n)
-      @data[@pos, n].tap { @pos += n }
+      @data.read(n).tap { @pos += n }
     end
     
     def peek(n)
-      @data[@pos, n]
+      old_pos = @data.pos
+      @data.read(n)
+    ensure
+      @data.pos = old_pos
     end
     
     def skip(n)
-      @pos += n
+      @data.seek(n, IO::SEEK_CUR).tap { @pos += n }
     end
 
     def substream
-      self.class.new(@data[@pos..-1])
+      self.class.new(self, pos)
     end
 
     def fast_forward
-      @data = @data[@pos..-1]
       @pos = 0
       self
     end

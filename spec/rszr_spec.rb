@@ -3,25 +3,32 @@ RSpec.describe 'Rszr' do
   it 'has a version number' do
     expect(Rszr::VERSION).to_not be_nil
   end
-  
-  it 'raises an error when trying to load a non-existing image' do
-    expect { Rszr::Image.load(RSpec.root.join('images/foo.jpg')) }.to raise_error(Rszr::FileNotFound)
-  end
-  
-  it 'raises an error when trying to load a non-supported image' do
-    expect { Rszr::Image.load(RSpec.root.join('images/broken.jpg')) }.to raise_error(Rszr::LoadError)
-  end
 
-  it 'loads images with uppercase extension' do
-    expect(Rszr::Image.load(RSpec.root.join('images/bacon.png'))).to be_kind_of(Rszr::Image)
-  end
-
-  it 'can instantiate new images' do
+  it 'instantiates new images' do
     expect(Rszr::Image.new(300, 400)).to be_kind_of(Rszr::Image)
   end
-  
-  it 'loads image from memory' do
-    expect(Rszr::Image.load_data(RSpec.root.join('images/test.jpg').binread).format).to eq('jpg')
+
+  context 'Loading' do
+
+    it 'loads images from disk' do
+      expect(Rszr::Image.load(RSpec.root.join('images/bacon.png'))).to be_kind_of(Rszr::Image)
+    end
+
+    it 'loads image from memory' do
+      expect(Rszr::Image.load_data(RSpec.root.join('images/test.jpg').binread).format).to eq('jpeg')
+    end
+
+    it 'loads images with uppercase extension' do
+      expect(Rszr::Image.load(RSpec.root.join('images/bacon.png'))).to be_kind_of(Rszr::Image)
+    end
+
+    it 'raises an error when trying to load a non-existing image' do
+      expect { Rszr::Image.load(RSpec.root.join('images/foo.jpg')) }.to raise_error(Rszr::FileNotFound)
+    end
+
+    it 'raises an error when trying to load a non-supported image' do
+      expect { Rszr::Image.load(RSpec.root.join('images/broken.jpg')) }.to raise_error(Rszr::LoadError)
+    end
   end
 
   context 'Images' do
@@ -31,11 +38,11 @@ RSpec.describe 'Rszr' do
       @image = Rszr::Image.load(RSpec.root.join('images/test.jpg'))
     end
 
-    it 'provides the image format as lowercase' do
+    it 'provide the image format as lowercase' do
       expect(Rszr::Image.load(RSpec.root.join('images/CHUNKY.PNG')).format).to eq('png')
     end
     
-    it 'provides width and height' do
+    it 'provide width and height' do
       expect(@image.width).to eq(1500)
       expect(@image.height).to eq(997)
     end
@@ -184,7 +191,72 @@ RSpec.describe 'Rszr' do
       end
     end
     
+    it 'saves image to memory' do
+      expect(Rszr::Image.load(RSpec.root.join('images/test.jpg')).save_data(format: 'png')).to start_with("\x89PNG".force_encoding('BINARY'))
+    end
+    
+  end
+  
+  context 'Autorotation' do
+
+    %w[jpg tiff].each do |format|
+      it "autorotates #{format.upcase} images" do
+        1.upto(8) do |orientation|
+          expect(Rszr::Image.load(RSpec.root.join('images', 'orientation', "#{orientation}.#{format}"), autorotate: true).original_orientation).to eq(orientation)
+        end
+      end
+      
+      it "ignores #{format.upcase} images without EXIF orientation" do
+        expect(Rszr::Image.load(RSpec.root.join('images', 'orientation', "none.#{format}"), autorotate: true).original_orientation).to be_nil
+      end
+      
+      it "ignores #{format.upcase} images with invalid EXIF orientation" do
+        expect(Rszr::Image.load(RSpec.root.join('images', 'orientation', "invalid.#{format}"), autorotate: true).original_orientation).to be_nil
+      end
+    end
+
+  end
+  
+  context 'Transformations' do
+    before(:each) do
+      @image = Rszr::Image.load(RSpec.root.join('images/test.jpg'))
+    end
+    
+    it 'flips' do
+      expect(@image.flip.dimensions).to eq(@image.dimensions)
+    end
+
+    it 'flops' do
+      expect(@image.flop.dimensions).to eq(@image.dimensions)
+    end
+    
+    it 'sharpens' do
+      expect(@image.sharpen(2).dimensions).to eq(@image.dimensions)
+    end
+    
+    it 'blurs' do
+      expect(@image.blur(3).dimensions).to eq(@image.dimensions)
+    end
+    
+    it 'brightens' do
+      expect(@image.brighten(0.1).dimensions).to eq(@image.dimensions)
+    end
+    
+    it 'darkens' do
+      expect(@image.brighten(-0.1).dimensions).to eq(@image.dimensions)
+    end
+    
+    it 'contrasts' do
+      expect(@image.contrast(0.1).dimensions).to eq(@image.dimensions)
+    end
+    
+    it 'gammas' do
+      expect(@image.gamma(1.1).dimensions).to eq(@image.dimensions)
+    end
+    
+    it 'filters' do
+      expect(@image.filter('bump_map( map=tint(red=50,tint=200), blue=10 );').dimensions).to eq(@image.dimensions)
+    end
   end
 
 end
-

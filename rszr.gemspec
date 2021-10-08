@@ -17,5 +17,5 @@ Gem::Specification.new do |s|
   s.require_paths = %w[lib ext]
   s.extensions    = %w[ext/rszr/extconf.rb]
 
-  s.requirements  = %w[imlib2 libexif]
+  s.requirements  = %w[imlib2]
 end

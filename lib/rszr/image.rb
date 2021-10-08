@@ -1,15 +1,17 @@
 module Rszr
   class Image
-    include Buffered
     extend Identification
-    extend Orientation
+    include Buffered
+    include Orientation
     
     class << self
 
       def load(path, autorotate: Rszr.autorotate, **opts)
         path = path.to_s
         raise FileNotFound unless File.exist?(path)
-        _load(path, autorotate)
+        image = _load(path)
+        autorotate(image, path) if autorotate
+        image
       end
       alias :open :load
       
@@ -70,6 +72,16 @@ module Rszr
       def rotate!(deg)
         _rotate(true, deg.to_f * Math::PI / 180.0)
       end
+      
+      # horizontal
+      def flop
+        dup.flop!
+      end
+      
+      # vertical
+      def flip
+        dup.flip!
+      end
     
       def sharpen(radius)
         dup.sharpen!(radius)
@@ -129,6 +141,15 @@ module Rszr
       ensure_path_is_writable(path)
       _save(path.to_s, format.to_s, quality)
     end
+    
+    def save_data(format: nil, quality: nil)
+      format ||= self.format || 'jpg'
+      with_tempfile(format) do |file|
+        save(file.path, format: format, quality: quality)
+        file.rewind
+        file.read
+      end
+    end
 
     private
     
@@ -140,9 +161,9 @@ module Rszr
     # 400, 300, background: rgba
     # 400, 300, skew: true
     
-    def calculate_size(*args)
+    def calculate_size(*args, crop: nil, skew: nil)
       options = args.last.is_a?(Hash) ? args.pop : {}
-      assert_valid_keys options, :crop, :background, :skew  #:extend, :width, :height, :max_width, :max_height, :box
+      #assert_valid_keys options, :crop, :background, :skew  #:extend, :width, :height, :max_width, :max_height, :box
       original_width, original_height = width, height
       x, y, = 0, 0
       if args.size == 1
@@ -159,9 +180,9 @@ module Rszr
           new_width = box_width
           new_height = box_width.to_f / original_width.to_f * original_height.to_f
         elsif box_width.is_a?(Numeric) && box_height.is_a?(Numeric)
-          if options[:skew]
+          if skew
             new_width, new_height = box_width, box_height
-          elsif options[:crop]
+          elsif crop
             # TODO: calculate x, y offset if crop
           else
             scale = original_width.to_f / original_height.to_f
