@@ -1,8 +1,10 @@
 require 'rbconfig'
 require 'pathname'
+require 'tempfile'
 
 require 'rszr/rszr'
 require 'rszr/version'
+require 'rszr/buffered'
 require 'rszr/image'
 
 module Rszr

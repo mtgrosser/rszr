@@ -1,8 +1,9 @@
 module Rszr
   class Image
+    include Buffered
     
     class << self
-      
+
       def load(path, autorotate: Rszr.autorotate, **opts)
         path = path.to_s
         raise FileNotFound unless File.exist?(path)
@@ -10,6 +11,12 @@ module Rszr
       end
       alias :open :load
       
+      def load_data(data, autorotate: Rszr.autorotate, **opts)
+        with_tempfile(data) do |file|
+          load(file.path, autorotate: autorotate, **opts)
+        end
+      end
+
     end
 
     def dimensions
@@ -116,6 +123,7 @@ module Rszr
     def save(path, format: nil, quality: nil)
       format ||= format_from_filename(path) || self.format || 'jpg'
       raise ArgumentError, "invalid quality #{quality.inspect}" if quality && !(0..100).cover?(quality)
+      ensure_path_is_writable(path)
       _save(path.to_s, format.to_s, quality)
     end
 
@@ -174,6 +182,15 @@ module Rszr
 
     def format_from_filename(path)
       File.extname(path)[1..-1].to_s.downcase
+    end
+    
+    def ensure_path_is_writable(path)
+      path = Pathname.new(path)
+      path.dirname.realpath.writable?
+    rescue Errno::ENOENT => e
+      raise SaveError, 'Non-existant path component'
+    rescue SystemCallError => e
+      raise SaveError, e.message
     end
 
     def assert_valid_keys(hsh, *valid_keys)
