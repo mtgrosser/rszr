@@ -309,7 +309,7 @@ static VALUE rszr_image__sharpen_bang(VALUE self, VALUE rb_radius)
   if (radius >= 0) {
     imlib_image_sharpen(radius);
   } else {
-    imlib_image_blur(radius);
+    imlib_image_blur(-radius);
   }
   
   return self;

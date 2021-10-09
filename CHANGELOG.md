@@ -1,3 +1,7 @@
+## Rszr 0.8.1 (unreleased)
+
+* Fix blur method
+
 ## Rszr 0.8.0 (Oct 8, 2021)
 
 * Allow loading of binary image data from buffer
