@@ -84,7 +84,7 @@ image.resize(0.5)
 image.resize!(400, :auto)
 ```
 
-[Full list and demo of resize options](https://raw.githubusercontent.com/mtgrosser/rszr/master/demo/resizing.html)
+Check out the [full list and demo of resize options](http://mtgrosser.github.io/rszr/resizing.html)!
 
 #### Other transformations
 
