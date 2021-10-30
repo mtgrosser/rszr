@@ -1,6 +1,8 @@
-## Rszr 0.8.1 (unreleased)
+## Rszr 1.0.0 (unreleased)
 
 * Fix blur method
+* Gravity cropping (resize to fill)
+* Add demo generator
 
 ## Rszr 0.8.0 (Oct 8, 2021)
 

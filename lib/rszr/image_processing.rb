@@ -51,7 +51,7 @@ module ImageProcessing
       # Resizes the image to not be larger than the specified dimensions.
       def resize_to_limit(width, height, **options)
         width, height = default_dimensions(width, height)
-        thumbnail(width, height, **options)
+        thumbnail(width, height, inflate: false, **options)
       end
 
       # Resizes the image to fit within the specified dimensions.
@@ -62,8 +62,8 @@ module ImageProcessing
 
       # Resizes the image to fill the specified dimensions, applying any
       # necessary cropping.
-      def resize_to_fill(width, height, **options)
-        thumbnail(width, height, crop: :center, **options)
+      def resize_to_fill(width, height, gravity: :center, **options)
+        thumbnail(width, height, crop: gravity, **options)
       end
 
       private

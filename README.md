@@ -68,6 +68,8 @@ For each transformation, there is a bang! and non-bang method.
 The bang method changes the image in place, while the non-bang method
 creates a copy of the image in memory.
 
+#### Resizing
+
 ```ruby
 # auto height
 image.resize(400, :auto)
@@ -78,6 +80,15 @@ image.resize(:auto, 300)
 # scale factor
 image.resize(0.5)
 
+# save memory, do not duplicate instance
+image.resize!(400, :auto)
+```
+
+[Full list and demo of resize options](https://raw.githubusercontent.com/mtgrosser/rszr/master/demo/resizing.html)
+
+#### Other transformations
+
+```ruby
 # crop
 image.crop(200, 200, 100, 100)
 
@@ -98,9 +109,6 @@ image.flop
 
 # initialize copy
 image.dup
-
-# save memory, do not duplicate instance
-image.resize!(400, :auto)
 ```
 
 ### Filters

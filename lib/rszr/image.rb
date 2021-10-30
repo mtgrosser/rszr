@@ -1,5 +1,7 @@
 module Rszr
   class Image
+    GRAVITIES = [true, :center, :n, :nw, :w, :sw, :s, :se, :e, :ne].freeze
+    
     extend Identification
     include Buffered
     include Orientation
@@ -166,47 +168,100 @@ module Rszr
     # 400, 300, background: rgba
     # 400, 300, skew: true
     
-    def calculate_size(*args, crop: nil, skew: nil)
-      options = args.last.is_a?(Hash) ? args.pop : {}
+    def calculate_size(*args, crop: nil, skew: nil, inflate: true)
+      #options = args.last.is_a?(Hash) ? args.pop : {}
       #assert_valid_keys options, :crop, :background, :skew  #:extend, :width, :height, :max_width, :max_height, :box
-      original_width, original_height = width, height
-      x, y, = 0, 0
       if args.size == 1
-        scale = args.first
-        raise ArgumentError, "scale factor #{scale.inspect} out of range" unless scale > 0 && scale < 1
-        new_width = original_width.to_f * scale
-        new_height = original_height.to_f * scale
+        calculate_size_for_scale(args.first)
       elsif args.size == 2
         box_width, box_height = args
-        if :auto == box_width && box_height.is_a?(Numeric)
-          new_height = box_height
-          new_width = box_height.to_f / original_height.to_f * original_width.to_f
-        elsif box_width.is_a?(Numeric) && :auto == box_height
-          new_width = box_width
-          new_height = box_width.to_f / original_width.to_f * original_height.to_f
+        if args.include?(:auto)
+          calculate_size_for_auto(box_width, box_height)
         elsif box_width.is_a?(Numeric) && box_height.is_a?(Numeric)
-          if skew
-            new_width, new_height = box_width, box_height
+          if not inflate and width <= box_width and height <= box_height
+            [0, 0, width, height, width, height]
+          elsif skew
+            calculate_size_for_skew(box_width, box_height)
           elsif crop
-            # TODO: calculate x, y offset if crop
+            calculate_size_for_crop(box_width, box_height, crop)
           else
-            scale = original_width.to_f / original_height.to_f
-            box_scale = box_width.to_f / box_height.to_f
-            if scale >= box_scale # wider
-              new_width = box_width
-              new_height = original_height.to_f * box_width.to_f / original_width.to_f
-            else # narrower
-              new_height = box_height
-              new_width = original_width.to_f * box_height.to_f / original_height.to_f
-            end
+            calculate_size_for_limit(box_width, box_height)
           end
-        else
-          raise ArgumentError, "unconclusive arguments #{args.inspect} #{options.inspect}"
         end
       else
         raise ArgumentError, "wrong number of arguments (#{args.size} for 1..2)"
       end
-      [x, y, original_width, original_height, new_width.round, new_height.round]
+    end
+    
+    def calculate_size_for_scale(factor)
+      raise ArgumentError, "scale factor #{factor.inspect} out of range" unless factor > 0 && factor < 1
+      [0, 0, width, height, (width.to_f * factor).round, (height.to_f * factor).round]
+    end
+    
+    def calculate_size_for_skew(box_width, box_height)
+      [0, 0, width, height, box_width, box_height]
+    end
+
+    def calculate_size_for_auto(box_width, box_height)
+      if :auto == box_width && box_height.is_a?(Numeric)
+        new_height = box_height
+        new_width = (box_height.to_f / height.to_f * width.to_f).round
+      elsif box_width.is_a?(Numeric) && :auto == box_height
+        new_width = box_width
+        new_height = (box_width.to_f / width.to_f * height.to_f).round
+      else
+        raise ArgumentError, "unconclusive arguments #{box_width.inspect}, #{box_height.inspect}"
+      end
+      [0, 0, width, height, new_width, new_height]
+    end
+
+    def calculate_size_for_crop(box_width, box_height, crop)
+      raise ArgumentError, "invalid crop gravity" unless GRAVITIES.include?(crop)
+      aspect = width.to_f / height.to_f
+      box_aspect = box_width.to_f / box_height.to_f
+      if aspect >= box_aspect # wider than box
+        src_width = (box_width.to_f * height.to_f / box_height.to_f).round
+        src_height = height
+        x = crop_horizontally(src_width, crop)
+        y = 0
+      else # narrower than box
+        src_width = width
+        src_height = (box_height.to_f * width.to_f / box_width.to_f).round
+        x = 0
+        y = crop_vertically(src_height, crop)
+      end
+      [x, y, src_width, src_height, box_width, box_height]
+    end
+    
+    def crop_horizontally(src_width, crop)
+      case crop
+      when :nw, :w, :sw then 0
+      when :ne, :e, :se then width - src_width
+      else
+        ((width - src_width).to_f / 2.to_f).round
+      end
+    end
+    
+    def crop_vertically(src_height, crop)
+      case crop
+      when :nw, :n, :ne then 0
+      when :sw, :s, :se then height - src_height
+      else
+        ((height - src_height).to_f / 2.to_f).round
+      end
+    end
+    
+    def calculate_size_for_limit(box_width, box_height)
+      scale = width.to_f / height.to_f
+      box_scale = box_width.to_f / box_height.to_f
+      if scale >= box_scale # wider
+        new_width = box_width
+        new_height = (height.to_f * box_width.to_f / width.to_f).round
+      else # narrower
+        new_height = box_height
+        new_width = (width.to_f * box_height.to_f / height.to_f).round
+      end
+      [0, 0, width, height, new_width, new_height]
     end
 
     def format_from_filename(path)
