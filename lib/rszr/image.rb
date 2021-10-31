@@ -39,6 +39,12 @@ module Rszr
       fmt = fmt.to_s if fmt.is_a?(Symbol)
       self._format = fmt
     end
+    
+    def [](x, y)
+      if x >= 0 && x <= width - 1 && y >= 0 && y <= height - 1
+        Color::RGBA.new(*_pixel(x, y))
+      end
+    end
 
     def inspect
       fmt = format

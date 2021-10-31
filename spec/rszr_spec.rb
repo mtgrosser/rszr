@@ -52,6 +52,18 @@ RSpec.describe 'Rszr' do
       expect(@image.height).to eq(997)
     end
     
+    it 'provide pixel RGBA value' do
+      expect(@image[0, 0].to_hex).to eq('4c5c6cff')
+    end
+    
+    it 'provide pixel RGB value' do
+      expect(@image[0, 0].to_hex(rgb: true)).to eq('4c5c6c')
+    end
+    
+    it 'return nil if pixel out of bounds' do
+      expect(@image[1000, 1000]).to be_nil
+    end
+
   end
   
   context 'Resizing' do

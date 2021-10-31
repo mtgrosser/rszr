@@ -2,6 +2,7 @@
 
 * Fix blur method
 * Gravity cropping (resize to fill)
+* Query pixel
 * Add demo generator
 
 ## Rszr 0.8.0 (Oct 8, 2021)

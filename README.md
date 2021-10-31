@@ -60,6 +60,9 @@ image.width => 400
 image.height => 300
 image.dimensions => [400, 300]
 image.format => "jpeg"
+image[0, 0] => <Rszr::Color::RGBA @red=38, @green=115, @blue=141, @alpha=255>
+image[0, 0].to_hex => "26738dff"
+image[0, 0].to_hex(rgb: true) => "26738d"
 ```
 
 ### Transformations
