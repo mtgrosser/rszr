@@ -83,6 +83,13 @@ image.resize(:auto, 300)
 # scale factor
 image.resize(0.5)
 
+# resize to fill
+image.resize(400, 300, crop: true)
+
+# resize to fill with gravity
+# where gravity in [:n, :nw, :w, :sw, :w, :se, :e, :ne, :center]
+image.resize(400, 300, crop: gravity)
+
 # save memory, do not duplicate instance
 image.resize!(400, :auto)
 ```

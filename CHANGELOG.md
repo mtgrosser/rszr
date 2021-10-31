@@ -1,4 +1,4 @@
-## Rszr 1.0.0 (unreleased)
+## Rszr 1.0.0
 
 * Fix blur method
 * Gravity cropping (resize to fill)
