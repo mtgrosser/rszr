@@ -1,4 +1,8 @@
-## Rszr 1.0.0 (unreleased)
+## Rszr 1.0.1 (Nov 10, 2021)
+
+* Remove libexif.h header check
+
+## Rszr 1.0.0 (Nov 9, 2021)
 
 * Fix blur method
 * Gravity cropping (resize to fill)
