@@ -60,6 +60,9 @@ image.width => 400
 image.height => 300
 image.dimensions => [400, 300]
 image.format => "jpeg"
+image[0, 0] => <Rszr::Color::RGBA @red=38, @green=115, @blue=141, @alpha=255>
+image[0, 0].to_hex => "26738dff"
+image[0, 0].to_hex(rgb: true) => "26738d"
 ```
 
 ### Transformations
@@ -80,11 +83,18 @@ image.resize(:auto, 300)
 # scale factor
 image.resize(0.5)
 
+# resize to fill
+image.resize(400, 300, crop: true)
+
+# resize to fill with gravity
+# where gravity in [:n, :nw, :w, :sw, :w, :se, :e, :ne, :center]
+image.resize(400, 300, crop: gravity)
+
 # save memory, do not duplicate instance
 image.resize!(400, :auto)
 ```
 
-[Full list and demo of resize options](https://raw.githubusercontent.com/mtgrosser/rszr/master/demo/resizing.html)
+Check out the [full list and demo of resize options](https://mtgrosser.github.io/rszr/resizing.html)!
 
 #### Other transformations
 

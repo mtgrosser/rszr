@@ -9,6 +9,7 @@ require 'rszr/stream'
 require 'rszr/identification'
 require 'rszr/orientation'
 require 'rszr/buffered'
+require 'rszr/color'
 require 'rszr/image'
 
 module Rszr

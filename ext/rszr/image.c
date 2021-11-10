@@ -140,6 +140,32 @@ static VALUE rszr_image_height(VALUE self)
   return INT2NUM(height);
 }
 
+
+static VALUE rszr_image__pixel_get(VALUE self, VALUE rb_x, VALUE rb_y)
+{
+  rszr_image_handle * handle;
+  Imlib_Color color_return;
+  VALUE rb_rgba;
+  int x, y;
+  
+  Check_Type(rb_x, T_FIXNUM);
+  x = FIX2INT(rb_x);
+  Check_Type(rb_y, T_FIXNUM);
+  y = FIX2INT(rb_y);
+  
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
+  imlib_context_set_image(handle->image);
+  imlib_image_query_pixel(x, y, &color_return);
+  
+  rb_rgba = rb_ary_new3(4, INT2NUM(color_return.red),
+                           INT2NUM(color_return.green),
+                           INT2NUM(color_return.blue),
+                           INT2NUM(color_return.alpha));
+  return rb_rgba;
+}
+
+
 /*
 static VALUE rszr_image_get_quality(VALUE self)
 {
@@ -475,6 +501,7 @@ void Init_rszr_image()
   rb_define_private_method(cImage, "_turn!",   rszr_image__turn_bang, 1);
   rb_define_private_method(cImage, "_rotate",    rszr_image__rotate, 2);
   rb_define_private_method(cImage, "_sharpen!",  rszr_image__sharpen_bang, 1);
+  rb_define_private_method(cImage, "_pixel",     rszr_image__pixel_get, 2);
   
   rb_define_private_method(cImage, "_save",       rszr_image__save, 3);
 }
