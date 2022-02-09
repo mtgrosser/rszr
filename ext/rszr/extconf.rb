@@ -1,10 +1,9 @@
 require 'mkmf'
 require 'rbconfig'
 
-imlib2_config = with_config('imlib2-config', 'imlib2-config')
+pkg_config('imlib2')
 
-$CFLAGS << ' -DX_DISPLAY_MISSING ' << `#{imlib2_config} --cflags`.chomp
-$LDFLAGS << ' ' << `#{imlib2_config} --libs`.chomp
+$CFLAGS << ' -DX_DISPLAY_MISSING'
 $LDFLAGS.gsub!(/\ -lX11\ -lXext/, '') if RUBY_PLATFORM =~ /darwin/
 
 unless find_header('Imlib2.h')

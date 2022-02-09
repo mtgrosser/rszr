@@ -1,3 +1,7 @@
+## Rszr 1.1.0 (Feb 9, 2022)
+
+* Use pkg_config as imlib2 dropped imlib2-config
+
 ## Rszr 1.0.1 (Nov 10, 2021)
 
 * Remove libexif.h header check
