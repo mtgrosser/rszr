@@ -164,7 +164,7 @@ Rszr.autorotate = true
 
 ## Rails / ActiveStorage interface
 
-Rszr provides a drop-in interface to the `image_processing` gem.
+Rszr provides a drop-in interface to the [image_processing](https://github.com/janko/image_processing) gem.
 It is faster than both `mini_magick` and `vips` and way easier to install than the latter.
 
 ```ruby
