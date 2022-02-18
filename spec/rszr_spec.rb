@@ -212,6 +212,18 @@ RSpec.describe 'Rszr' do
       expect(Rszr::Image.load(RSpec.root.join('images/test.jpg')).save_data(format: 'png')).to start_with("\x89PNG".force_encoding('BINARY'))
     end
     
+    it 'saves interlaced PNGs but clears interlacing flag' do
+      Dir.mktmpdir do |dir|
+        resized_file = Pathname.new(File.join(dir, 'interlace.png'))
+        resized_file.unlink if resized_file.exist?
+        @image.save(resized_file.to_s, interlace: true)
+        expect(`file #{resized_file}`).to include('interlaced')
+        resized_file.unlink
+        @image.save(resized_file.to_s, interlace: false)
+        expect(`file #{resized_file}`).to include('non-interlaced')
+      end
+    end
+
   end
   
   context 'Autorotation' do

@@ -162,6 +162,19 @@ To enable autorotation by default:
 Rszr.autorotate = true
 ```
 
+### Creating interlaced PNG and progressive JPEG images
+
+In order to save interlaced PNGs and progressive JPEGs, set the `interlace` option to `true`:
+
+```ruby
+image.save('interlaced.png', interlace: true)
+```
+
+As of v1.8.0, `imlib2` doesn't support saving progressive JPEG images yet,
+but a [patch](https://git.enlightenment.org/legacy/imlib2.git/commit/?id=37e8c9578897259211284d3590cc38b7f6a718dc) has been submitted.
+
+For EL8, there are pre-built RPMs provided by the [onrooby repo](http://downloads.onrooby.com/repo/el/8/x86_64/).
+
 ## Rails / ActiveStorage interface
 
 Rszr provides a drop-in interface to the [image_processing](https://github.com/janko/image_processing) gem.
