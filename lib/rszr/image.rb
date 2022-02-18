@@ -152,7 +152,7 @@ module Rszr
       format ||= format_from_filename(path) || self.format || 'jpg'
       raise ArgumentError, "invalid quality #{quality.inspect}" if quality && !(0..100).cover?(quality)
       ensure_path_is_writable(path)
-      _save(path.to_s, format.to_s, quality, interlaced)
+      _save(path.to_s, format.to_s, quality, interlace)
     end
     
     def save_data(format: nil, quality: nil)
