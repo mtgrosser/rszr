@@ -148,11 +148,11 @@ module Rszr
     
     include Transformations
 
-    def save(path, format: nil, quality: nil)
+    def save(path, format: nil, quality: nil, interlace: false)
       format ||= format_from_filename(path) || self.format || 'jpg'
       raise ArgumentError, "invalid quality #{quality.inspect}" if quality && !(0..100).cover?(quality)
       ensure_path_is_writable(path)
-      _save(path.to_s, format.to_s, quality)
+      _save(path.to_s, format.to_s, quality, interlaced)
     end
     
     def save_data(format: nil, quality: nil)

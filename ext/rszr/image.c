@@ -165,7 +165,6 @@ static VALUE rszr_image__pixel_get(VALUE self, VALUE rb_x, VALUE rb_y)
   return rb_rgba;
 }
 
-
 /*
 static VALUE rszr_image_get_quality(VALUE self)
 {
@@ -204,6 +203,7 @@ static VALUE rszr_image_set_quality(VALUE self, VALUE rb_quality)
   return INT2NUM(quality);
 }
 */
+
 
 static VALUE rszr_image_dup(VALUE self)
 {
@@ -445,7 +445,7 @@ static VALUE rszr_image__crop(VALUE self, VALUE bang, VALUE rb_x, VALUE rb_y, VA
 }
 
 
-static VALUE rszr_image__save(VALUE self, VALUE rb_path, VALUE rb_format, VALUE rb_quality)
+static VALUE rszr_image__save(VALUE self, VALUE rb_path, VALUE rb_format, VALUE rb_quality, VALUE rb_interlace)
 {
   rszr_image_handle * handle;
   char * path;
@@ -463,6 +463,11 @@ static VALUE rszr_image__save(VALUE self, VALUE rb_path, VALUE rb_format, VALUE 
   imlib_image_set_format(format);
   if (quality)
     imlib_image_attach_data_value("quality", NULL, quality, NULL);
+
+  imlib_image_remove_attached_data_value("interlacing");
+  if (RTEST(rb_interlace))
+    imlib_image_attach_data_value("interlacing", NULL, 1, NULL);
+
   imlib_save_image_with_error_return(path, &save_error);
   
   if (save_error) {
@@ -503,7 +508,7 @@ void Init_rszr_image()
   rb_define_private_method(cImage, "_sharpen!",  rszr_image__sharpen_bang, 1);
   rb_define_private_method(cImage, "_pixel",     rszr_image__pixel_get, 2);
   
-  rb_define_private_method(cImage, "_save",       rszr_image__save, 3);
+  rb_define_private_method(cImage, "_save",       rszr_image__save, 4);
 }
 
 #endif
