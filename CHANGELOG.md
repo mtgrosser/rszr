@@ -1,4 +1,4 @@
-## Rszr 1.2.0 (unreleased)
+## Rszr 1.2.0 (Mar 11, 2022)
 
 * Saving interlaced PNG and progressive JPEG
 
