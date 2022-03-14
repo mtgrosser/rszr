@@ -189,6 +189,16 @@ RSpec.describe 'Rszr' do
         expect(resized_file.exist?).to be(true)
       end
     end
+
+    it 'saves images when given path does not have extension' do
+      Dir.mktmpdir do |dir|
+        resized_file = Pathname.new(File.join(dir, 'resized_jpg'))
+        resized_file.unlink if resized_file.exist?
+        expect(resized_file.exist?).to be(false)
+        expect(@image.save(resized_file.to_s)).to be(true)
+        expect(resized_file.exist?).to be(true)
+      end
+    end
     
     it 'raises save errors' do
       Dir.mktmpdir do |dir|

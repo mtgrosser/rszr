@@ -271,7 +271,11 @@ module Rszr
     end
 
     def format_from_filename(path)
-      File.extname(path)[1..-1].to_s.downcase
+      extension = File.extname(path)[1..-1]
+
+      return if extension.nil?
+
+      extension.to_s.downcase
     end
     
     def ensure_path_is_writable(path)
