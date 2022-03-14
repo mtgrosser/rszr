@@ -1,3 +1,7 @@
+## Rszr 1.2.1 (unreleased)
+
+* Fix saving without extension (@mantas)
+
 ## Rszr 1.2.0 (Mar 11, 2022)
 
 * Saving interlaced PNG and progressive JPEG
