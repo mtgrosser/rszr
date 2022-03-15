@@ -506,7 +506,7 @@ static VALUE rszr_image__blend(VALUE self, VALUE other, VALUE rb_merge_alpha, VA
   rszr_image_handle * other_handle;
   Imlib_Operation operation;
 
-  Check_Type(rb_operation, T_FIXNUM);
+  Check_Type(rb_mode,  T_FIXNUM);
   Check_Type(rb_src_x, T_FIXNUM);
   Check_Type(rb_src_y, T_FIXNUM);
   Check_Type(rb_src_w, T_FIXNUM);
@@ -593,6 +593,7 @@ static VALUE rszr_image__save(VALUE self, VALUE rb_path, VALUE rb_format, VALUE 
   
   imlib_context_set_image(handle->image);
   imlib_image_set_format(format);
+
   if (quality)
     imlib_image_attach_data_value("quality", NULL, quality, NULL);
 
