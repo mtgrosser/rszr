@@ -1,6 +1,7 @@
 module Rszr
   class Image
     GRAVITIES = [true, :center, :n, :nw, :w, :sw, :s, :se, :e, :ne].freeze
+    BLENDING_MODES = %i[copy add subtract reshade].freeze
     
     extend Identification
     include Buffered
@@ -40,6 +41,8 @@ module Rszr
       self._format = fmt
     end
     
+    alias_method :alpha?, :alpha
+    
     def [](x, y)
       if x >= 0 && x <= width - 1 && y >= 0 && y <= height - 1
         Color::RGBA.new(*_pixel(x, y))
@@ -49,7 +52,7 @@ module Rszr
     def inspect
       fmt = format
       fmt = " #{fmt.upcase}" if fmt
-      "#<#{self.class.name}:0x#{object_id.to_s(16)} #{width}x#{height}#{fmt}>"
+      "#<#{self.class.name}:0x#{object_id.to_s(16)} #{width}x#{height}x#{alpha? ? 32 : 24}#{fmt}>"
     end
 
     module Transformations
@@ -144,9 +147,23 @@ module Rszr
       def gamma(*args, **opts)
         dup.gamma!(*args, **opts)
       end
+      
+      def blend(image, mode: :copy)
+        raise ArgumentError, "mode must be one of #{BLENDING_MODES.map(&:to_s).join(', ')}" unless BLENDING_MODES.include?(mode)
+        _blend(image, true, BLENDING_MODES.index(mode), 0, 0, image.width, image.height, 0, 0, image.width, image.height)
+      end
     end
     
     include Transformations
+
+    def initialize(width, height, alpha: false, background: nil)
+      raise ArgumentError, 'illegal image dimensions' if width < 1 || width > 32766 || height < 1 || height > 32766
+      raise ArgumentError, 'background must descend from Rszr::Color::Base' if background && !(background.class < Color::Base)
+      _initialize(width, height).tap do |image|
+        image.alpha = alpha
+        image.fill!(background) if background
+      end
+    end
 
     def save(path, format: nil, quality: nil, interlace: false)
       format ||= format_from_filename(path) || self.format || 'jpg'

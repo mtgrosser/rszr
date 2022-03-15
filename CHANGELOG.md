@@ -1,6 +1,9 @@
-## Rszr 1.2.1 (unreleased)
+## Rszr 1.3.0 (unreleased)
 
 * Fix saving without extension (@mantas)
+* Alpha channel control
+* Background initialization
+* Image blending
 
 ## Rszr 1.2.0 (Mar 11, 2022)
 

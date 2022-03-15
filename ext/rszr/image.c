@@ -34,7 +34,7 @@ static VALUE rszr_image_s_allocate(VALUE klass)
 }
 
 
-static VALUE rszr_image_initialize(VALUE self, VALUE rb_width, VALUE rb_height)
+static VALUE rszr_image__initialize(VALUE self, VALUE rb_width, VALUE rb_height)
 {
   rszr_image_handle * handle;
   
@@ -98,7 +98,6 @@ static VALUE rszr_image__format_get(VALUE self)
   }
 }
 
-
 static VALUE rszr_image__format_set(VALUE self, VALUE rb_format)
 {
   rszr_image_handle * handle;
@@ -110,6 +109,54 @@ static VALUE rszr_image__format_set(VALUE self, VALUE rb_format)
   imlib_image_set_format(format);
   
   return self;
+}
+
+
+static void rszr_image_color_set(VALUE rb_Color)
+{
+  VALUE rb_cColorBase;
+  int r, g, b, a;
+
+  rb_cColorBase = rb_path2class("Rszr::Color::Base");
+
+  if(!rb_obj_is_kind_of(rb_Color, rb_cColorBase) || RBASIC_CLASS(rb_Color) == rb_cColorBase) {
+    rb_raise(rb_eArgError, "color must descend from Rszr::Color::Base");
+  }
+
+  r = FIX2INT(rb_funcall(rb_Color, rb_intern("red"), 0));
+  g = FIX2INT(rb_funcall(rb_Color, rb_intern("green"), 0));
+  b = FIX2INT(rb_funcall(rb_Color, rb_intern("blue"), 0));
+  a = FIX2INT(rb_funcall(rb_Color, rb_intern("alpha"), 0));
+
+  // TODO: use color model specific setter function
+  imlib_context_set_color(r, g, b, a);
+}
+
+
+static VALUE rszr_image_alpha_get(VALUE self)
+{
+  rszr_image_handle * handle;
+
+  Data_Get_Struct(self, rszr_image_handle, handle);
+
+  imlib_context_set_image(handle->image);
+  if (imlib_image_has_alpha()) {
+    return Qtrue;
+  }
+
+  return Qfalse;
+}
+
+static VALUE rszr_image_alpha_set(VALUE self, VALUE rb_alpha)
+{
+  rszr_image_handle * handle;
+
+  Data_Get_Struct(self, rszr_image_handle, handle);
+
+  imlib_context_set_image(handle->image);
+  imlib_image_set_has_alpha(RTEST(rb_alpha) ? 1 : 0);
+
+  return Qnil;
 }
 
 
@@ -357,6 +404,7 @@ static Imlib_Image rszr_create_cropped_scaled_image(const Imlib_Image image, VAL
 
   imlib_context_set_image(image);
   imlib_context_set_anti_alias(1);
+  imlib_context_set_dither(1);
   resized_image = imlib_create_cropped_scaled_image(src_x, src_y, src_w, src_h, dst_w, dst_h);
   
   if (!resized_image) {
@@ -400,6 +448,11 @@ static Imlib_Image rszr_create_cropped_image(const Imlib_Image image, VALUE rb_x
 {
   Imlib_Image cropped_image;
   
+  Check_Type(rb_x, T_FIXNUM);
+  Check_Type(rb_y, T_FIXNUM);
+  Check_Type(rb_w, T_FIXNUM);
+  Check_Type(rb_h, T_FIXNUM);
+
   int x = NUM2INT(rb_x);
   int y = NUM2INT(rb_y);
   int w = NUM2INT(rb_w);
@@ -445,6 +498,85 @@ static VALUE rszr_image__crop(VALUE self, VALUE bang, VALUE rb_x, VALUE rb_y, VA
 }
 
 
+static VALUE rszr_image__blend(VALUE self, VALUE other, VALUE rb_merge_alpha, VALUE rb_mode,
+                               VALUE rb_src_x, VALUE rb_src_y, VALUE rb_src_w, VALUE rb_src_h,
+                               VALUE rb_dst_x, VALUE rb_dst_y, VALUE rb_dst_w, VALUE rb_dst_h)
+{
+  rszr_image_handle * handle;
+  rszr_image_handle * other_handle;
+  Imlib_Operation operation;
+
+  Check_Type(rb_operation, T_FIXNUM);
+  Check_Type(rb_src_x, T_FIXNUM);
+  Check_Type(rb_src_y, T_FIXNUM);
+  Check_Type(rb_src_w, T_FIXNUM);
+  Check_Type(rb_src_h, T_FIXNUM);
+  Check_Type(rb_dst_x, T_FIXNUM);
+  Check_Type(rb_dst_y, T_FIXNUM);
+  Check_Type(rb_dst_w, T_FIXNUM);
+  Check_Type(rb_dst_h, T_FIXNUM);
+
+  operation = (Imlib_Operation) NUM2INT(rb_mode);
+  int src_x = NUM2INT(rb_src_x);
+  int src_y = NUM2INT(rb_src_y);
+  int src_w = NUM2INT(rb_src_w);
+  int src_h = NUM2INT(rb_src_h);
+  int dst_x = NUM2INT(rb_dst_x);
+  int dst_y = NUM2INT(rb_dst_y);
+  int dst_w = NUM2INT(rb_dst_w);
+  int dst_h = NUM2INT(rb_dst_h);
+
+  char merge_alpha = RTEST(rb_merge_alpha) ? 1 : 0;
+
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  Data_Get_Struct(other, rszr_image_handle, other_handle);
+
+  imlib_context_set_image(handle->image);
+  imlib_context_set_operation(operation);
+  imlib_blend_image_onto_image(other_handle->image, merge_alpha, src_x, src_y, src_w, src_h, dst_x, dst_y, dst_w, dst_h);
+
+  return self;
+}
+
+
+static VALUE rszr_image_rectangle_bang(VALUE self, VALUE rb_color, VALUE rb_x, VALUE rb_y, VALUE rb_w, VALUE rb_h)
+{
+  rszr_image_handle * handle;
+
+  Check_Type(rb_x, T_FIXNUM);
+  Check_Type(rb_y, T_FIXNUM);
+  Check_Type(rb_w, T_FIXNUM);
+  Check_Type(rb_h, T_FIXNUM);
+
+  int x = NUM2INT(rb_x);
+  int y = NUM2INT(rb_y);
+  int w = NUM2INT(rb_w);
+  int h = NUM2INT(rb_h);
+
+  Data_Get_Struct(self, rszr_image_handle, handle);
+
+  imlib_context_set_image(handle->image);
+  rszr_image_color_set(rb_color);
+  imlib_image_fill_rectangle(x, y, w, h);
+
+  return self;
+}
+
+
+static VALUE rszr_image_fill_bang(VALUE self, VALUE rb_color)
+{
+  rszr_image_handle * handle;
+
+  Data_Get_Struct(self, rszr_image_handle, handle);
+
+  imlib_context_set_image(handle->image);
+  rszr_image_color_set(rb_color);
+  imlib_image_fill_rectangle(0, 0, imlib_image_get_width(), imlib_image_get_height());
+
+  return self;
+}
+
+
 static VALUE rszr_image__save(VALUE self, VALUE rb_path, VALUE rb_format, VALUE rb_quality, VALUE rb_interlace)
 {
   rszr_image_handle * handle;
@@ -487,27 +619,29 @@ void Init_rszr_image()
   rb_define_private_method(rb_singleton_class(cImage), "_load", rszr_image_s__load, 1);
 
   // Instance methods
-  rb_define_method(cImage, "initialize",  rszr_image_initialize, 2);
   rb_define_method(cImage, "width",       rszr_image_width, 0);
   rb_define_method(cImage, "height",      rszr_image_height, 0);
   rb_define_method(cImage, "dup",         rszr_image_dup, 0);
   rb_define_method(cImage, "filter!",     rszr_image_filter_bang, 1);
   rb_define_method(cImage, "flop!",       rszr_image_flop_bang, 0);
   rb_define_method(cImage, "flip!",       rszr_image_flip_bang, 0);
+  rb_define_method(cImage, "rectangle!",  rszr_image_rectangle_bang, 5);
+  rb_define_method(cImage, "fill!",       rszr_image_fill_bang, 1);
   
-  // rb_define_method(cImage, "quality",     rszr_image_get_quality, 0);
-  // rb_define_method(cImage, "quality=",    rszr_image_set_quality, 1);
+  rb_define_method(cImage, "alpha",   rszr_image_alpha_get, 0);
+  rb_define_method(cImage, "alpha=",  rszr_image_alpha_set, 1);
   
   rb_define_protected_method(cImage, "_format",  rszr_image__format_get, 0);
   rb_define_protected_method(cImage, "_format=", rszr_image__format_set, 1);
   
-  rb_define_private_method(cImage, "_resize",  rszr_image__resize, 7);
-  rb_define_private_method(cImage, "_crop",    rszr_image__crop, 5);
-  rb_define_private_method(cImage, "_turn!",   rszr_image__turn_bang, 1);
-  rb_define_private_method(cImage, "_rotate",    rszr_image__rotate, 2);
-  rb_define_private_method(cImage, "_sharpen!",  rszr_image__sharpen_bang, 1);
-  rb_define_private_method(cImage, "_pixel",     rszr_image__pixel_get, 2);
-  
+  rb_define_private_method(cImage, "_initialize", rszr_image__initialize, 2);
+  rb_define_private_method(cImage, "_resize",     rszr_image__resize, 7);
+  rb_define_private_method(cImage, "_crop",       rszr_image__crop, 5);
+  rb_define_private_method(cImage, "_turn!",      rszr_image__turn_bang, 1);
+  rb_define_private_method(cImage, "_rotate",     rszr_image__rotate, 2);
+  rb_define_private_method(cImage, "_sharpen!",   rszr_image__sharpen_bang, 1);
+  rb_define_private_method(cImage, "_pixel",      rszr_image__pixel_get, 2);
+  rb_define_private_method(cImage, "_blend",      rszr_image__blend, 11);
   rb_define_private_method(cImage, "_save",       rszr_image__save, 4);
 }
 
