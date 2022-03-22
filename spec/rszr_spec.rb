@@ -210,6 +210,16 @@ RSpec.describe 'Rszr' do
       end
     end
 
+    it 'saves using specified format, overriding extension' do
+      Dir.mktmpdir do |dir|
+        resized_file = Pathname.new(File.join(dir, 'resized.jpg'))
+        resized_file.unlink if resized_file.exist?
+        expect(resized_file.exist?).to be(false)
+        expect(@image.save(resized_file.to_s, format: :png)).to be(true)
+        expect(resized_file).to have_format('png')
+      end
+    end
+
     it 'raises save errors' do
       Dir.mktmpdir do |dir|
         resized_file = Pathname.new(File.join(dir, 'foo', 'bar', 'resized.jpg'))

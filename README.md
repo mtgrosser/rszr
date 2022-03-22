@@ -52,6 +52,9 @@ image.save('resized.jpg')
 
 # save it as PNG
 image.save('resized.png')
+
+# save without extension in given format
+image.save('resized', format: 'png')
 ```
 
 ### Image info
