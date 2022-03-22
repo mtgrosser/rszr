@@ -1,4 +1,4 @@
-## Rszr 1.2.1 (unreleased)
+## Rszr 1.2.1 (Mar 22, 2022)
 
 * Fix saving without extension (@mantas)
 
