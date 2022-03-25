@@ -6,6 +6,10 @@
 #include "errors.h"
 
 VALUE cImage = Qnil;
+VALUE cColorBase = Qnil;
+VALUE cColorGradient = Qnil;
+VALUE cColorPoint = Qnil;
+VALUE cFill = Qnil;
 
 
 static void rszr_free_image(Imlib_Image image)
@@ -112,21 +116,18 @@ static VALUE rszr_image__format_set(VALUE self, VALUE rb_format)
 }
 
 
-static void rszr_image_color_set(VALUE rb_Color)
+static void rszr_image_color_set(VALUE rb_color)
 {
-  VALUE rb_cColorBase;
   int r, g, b, a;
 
-  rb_cColorBase = rb_path2class("Rszr::Color::Base");
-
-  if(!rb_obj_is_kind_of(rb_Color, rb_cColorBase) || RBASIC_CLASS(rb_Color) == rb_cColorBase) {
+  if(!rb_obj_is_kind_of(rb_color, cColorBase) || RBASIC_CLASS(rb_color) == cColorBase) {
     rb_raise(rb_eArgError, "color must descend from Rszr::Color::Base");
   }
 
-  r = FIX2INT(rb_funcall(rb_Color, rb_intern("red"), 0));
-  g = FIX2INT(rb_funcall(rb_Color, rb_intern("green"), 0));
-  b = FIX2INT(rb_funcall(rb_Color, rb_intern("blue"), 0));
-  a = FIX2INT(rb_funcall(rb_Color, rb_intern("alpha"), 0));
+  r = FIX2INT(rb_funcall(rb_color, rb_intern("red"), 0));
+  g = FIX2INT(rb_funcall(rb_color, rb_intern("green"), 0));
+  b = FIX2INT(rb_funcall(rb_color, rb_intern("blue"), 0));
+  a = FIX2INT(rb_funcall(rb_color, rb_intern("alpha"), 0));
 
   // TODO: use color model specific setter function
   imlib_context_set_color(r, g, b, a);
@@ -539,9 +540,57 @@ static VALUE rszr_image__blend(VALUE self, VALUE other, VALUE rb_merge_alpha, VA
 }
 
 
-static VALUE rszr_image_rectangle_bang(VALUE self, VALUE rb_color, VALUE rb_x, VALUE rb_y, VALUE rb_w, VALUE rb_h)
+static Imlib_Color_Range rszr_image_init_color_range(VALUE rb_gradient)
+{
+  Imlib_Color_Range range;
+  VALUE rb_points;
+  VALUE rb_point;
+  VALUE rb_color;
+  int size, i;
+  double position;
+  int red, green, blue, alpha;
+
+  if(!rb_obj_is_kind_of(rb_gradient, cColorGradient)) {
+    rb_raise(rb_eArgError, "color must be a Rszr::Color::Gradient");
+  }
+
+  rb_points = rb_funcall(rb_gradient, rb_intern("points"), 0);
+  Check_Type(rb_points, T_ARRAY);
+
+  imlib_context_get_color(&red, &green, &blue, &alpha);
+
+  range = imlib_create_color_range();
+  imlib_context_set_color_range(range);
+
+  size = RARRAY_LEN(rb_points);
+  for (i = 0; i < size; i++) {
+    rb_point = rb_ary_entry(rb_points, i);
+    if(!rb_obj_is_kind_of(rb_point, cColorPoint))
+      rb_raise(rb_eArgError, "point must be a Rszr::Color::Point");
+
+    rb_color = rb_funcall(rb_point, rb_intern("color"), 0);
+    if(!rb_obj_is_kind_of(rb_color, cColorBase) || RBASIC_CLASS(rb_color) == cColorBase)
+      rb_raise(rb_eArgError, "color must descend from Rszr::Color::Base");
+
+    position = NUM2DBL(rb_funcall(rb_point, rb_intern("position"), 0));
+
+    rszr_image_color_set(rb_color);
+    imlib_add_color_to_color_range(position * 255);
+  }
+
+  imlib_context_set_color(red, green, blue, alpha);
+
+  return range;
+}
+
+
+static VALUE rszr_image__rectangle_bang(VALUE self, VALUE rb_fill, VALUE rb_x, VALUE rb_y, VALUE rb_w, VALUE rb_h)
 {
   rszr_image_handle * handle;
+  VALUE rb_gradient;
+  VALUE rb_color;
+  Imlib_Color_Range range;
+  double angle;
 
   Check_Type(rb_x, T_FIXNUM);
   Check_Type(rb_y, T_FIXNUM);
@@ -553,25 +602,21 @@ static VALUE rszr_image_rectangle_bang(VALUE self, VALUE rb_color, VALUE rb_x, V
   int w = NUM2INT(rb_w);
   int h = NUM2INT(rb_h);
 
+  rb_gradient = rb_funcall(rb_fill, rb_intern("gradient"), 0);
+  rb_color = rb_funcall(rb_fill, rb_intern("color"), 0);
+  
   Data_Get_Struct(self, rszr_image_handle, handle);
-
   imlib_context_set_image(handle->image);
-  rszr_image_color_set(rb_color);
-  imlib_image_fill_rectangle(x, y, w, h);
 
-  return self;
-}
-
-
-static VALUE rszr_image_fill_bang(VALUE self, VALUE rb_color)
-{
-  rszr_image_handle * handle;
-
-  Data_Get_Struct(self, rszr_image_handle, handle);
-
-  imlib_context_set_image(handle->image);
-  rszr_image_color_set(rb_color);
-  imlib_image_fill_rectangle(0, 0, imlib_image_get_width(), imlib_image_get_height());
+  if (!NIL_P(rb_gradient)) {
+    angle = NUM2DBL(rb_funcall(rb_fill, rb_intern("angle"), 0));
+    range = rszr_image_init_color_range(rb_gradient);
+    imlib_image_fill_color_range_rectangle(x, y, w, h, angle);
+    imlib_free_color_range();
+  } else if (!NIL_P(rb_color)) {
+    rszr_image_color_set(rb_color);
+    imlib_image_fill_rectangle(x, y, w, h);
+  }
 
   return self;
 }
@@ -614,6 +659,12 @@ static VALUE rszr_image__save(VALUE self, VALUE rb_path, VALUE rb_format, VALUE 
 void Init_rszr_image()
 {
   cImage = rb_define_class_under(mRszr, "Image", rb_cObject);
+
+  cColorBase = rb_path2class("Rszr::Color::Base");
+  cColorGradient = rb_path2class("Rszr::Color::Gradient");
+  cColorPoint = rb_path2class("Rszr::Color::Point");
+  cFill = rb_path2class("Rszr::Fill");
+
   rb_define_alloc_func(cImage, rszr_image_s_allocate);
 
   // Class methods
@@ -626,15 +677,13 @@ void Init_rszr_image()
   rb_define_method(cImage, "filter!",     rszr_image_filter_bang, 1);
   rb_define_method(cImage, "flop!",       rszr_image_flop_bang, 0);
   rb_define_method(cImage, "flip!",       rszr_image_flip_bang, 0);
-  rb_define_method(cImage, "rectangle!",  rszr_image_rectangle_bang, 5);
-  rb_define_method(cImage, "fill!",       rszr_image_fill_bang, 1);
   
   rb_define_method(cImage, "alpha",   rszr_image_alpha_get, 0);
   rb_define_method(cImage, "alpha=",  rszr_image_alpha_set, 1);
   
   rb_define_protected_method(cImage, "_format",  rszr_image__format_get, 0);
   rb_define_protected_method(cImage, "_format=", rszr_image__format_set, 1);
-  
+
   rb_define_private_method(cImage, "_initialize", rszr_image__initialize, 2);
   rb_define_private_method(cImage, "_resize",     rszr_image__resize, 7);
   rb_define_private_method(cImage, "_crop",       rszr_image__crop, 5);
@@ -643,6 +692,8 @@ void Init_rszr_image()
   rb_define_private_method(cImage, "_sharpen!",   rszr_image__sharpen_bang, 1);
   rb_define_private_method(cImage, "_pixel",      rszr_image__pixel_get, 2);
   rb_define_private_method(cImage, "_blend",      rszr_image__blend, 11);
+  rb_define_private_method(cImage, "_rectangle!", rszr_image__rectangle_bang, 5);
+
   rb_define_private_method(cImage, "_save",       rszr_image__save, 4);
 }
 

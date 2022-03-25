@@ -5,6 +5,7 @@
 #include "errors.h"
 
 VALUE eRszrError = Qnil;
+VALUE eRszrInternalError = Qnil;
 VALUE eRszrFileNotFound = Qnil;
 VALUE eRszrTransformationError = Qnil;
 VALUE eRszrErrorWithMessage = Qnil;
@@ -33,11 +34,12 @@ const int RSZR_MAX_ERROR_INDEX = 13;
 void Init_rszr_errors()
 {
   eRszrError = rb_define_class_under(mRszr, "Error", rb_eStandardError);
+  eRszrInternalError = rb_define_class_under(mRszr, "InternalError", eRszrError);
   eRszrFileNotFound = rb_define_class_under(mRszr, "FileNotFound", eRszrError);
   eRszrTransformationError = rb_define_class_under(mRszr, "TransformationError", eRszrError);
   eRszrErrorWithMessage = rb_define_class_under(mRszr, "ErrorWithMessage", eRszrError);
   eRszrLoadError = rb_define_class_under(mRszr, "LoadError", eRszrErrorWithMessage);
-  eRszrSaveError = rb_define_class_under(mRszr, "SaveError", eRszrErrorWithMessage);
+  eRszrSaveError = rb_define_class_under(mRszr, "SaveError", eRszrErrorWithMessage);  
 }
 
 static void rszr_raise_error_with_message(VALUE rb_error_class, Imlib_Load_Error error)

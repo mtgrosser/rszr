@@ -121,6 +121,36 @@ image.flop
 image.dup
 ```
 
+### Image generation
+
+```ruby
+# generate new image with transparent background
+image = Rszr::Image.new(500, 500, alpha: true, background: Rszr::Color::Transparent)
+
+# fill image with 50% opacity
+image.fill!(Rszr::Color::RGBA.new(0, 206, 209, 50))
+
+# define a color gradient
+gradient = Rszr::Color::Gradient.new do |g|
+  g.point 0, 255, 250, 205, 50
+  g.point 0.5, 135, 206, 250
+  g.point 1, Rszr::Color::White
+end
+
+# draw a rectangle and fill it using the gradient with 45°
+image.rectangle!(gradient.to_fill(45), 100, 100, 300, 300)
+```
+
+### Watermarking
+
+```ruby
+# load logo
+logo = Rszr::Image.load('logo.png')
+
+# blend it onto the image at position (10, 10)
+image.blend(logo, 10, 10)
+```
+
 ### Filters
 
 Filters also support bang! and non-bang methods.
@@ -170,8 +200,7 @@ In order to save interlaced PNGs and progressive JPEGs, set the `interlace` opti
 image.save('interlaced.png', interlace: true)
 ```
 
-As of v1.8.0, `imlib2` doesn't support saving progressive JPEG images yet,
-but a [patch](https://git.enlightenment.org/legacy/imlib2.git/commit/?id=37e8c9578897259211284d3590cc38b7f6a718dc) has been submitted.
+Saving progressive JPEG images requires `imlib2` >= 1.8.1.
 
 For EL8, there are pre-built RPMs provided by the [onrooby repo](http://downloads.onrooby.com/repo/el/8/x86_64/).
 

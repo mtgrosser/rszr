@@ -4,6 +4,8 @@
 * Alpha channel control
 * Background initialization
 * Image blending
+* Rectangle and image fills
+* Color gradients
 
 ## Rszr 1.2.0 (Mar 11, 2022)
 

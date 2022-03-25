@@ -148,9 +148,28 @@ module Rszr
         dup.gamma!(*args, **opts)
       end
       
+      # bang?
       def blend(image, mode: :copy)
         raise ArgumentError, "mode must be one of #{BLENDING_MODES.map(&:to_s).join(', ')}" unless BLENDING_MODES.include?(mode)
         _blend(image, true, BLENDING_MODES.index(mode), 0, 0, image.width, image.height, 0, 0, image.width, image.height)
+      end
+      
+      def rectangle!(coloring, x, y, w, h)
+        raise ArgumentError, "coloring must respond to to_fill" unless coloring.respond_to?(:to_fill)
+        _rectangle!(coloring.to_fill, x, y, w, h)
+      end
+      
+      def rectangle(*args, **opts)
+        dup.rectangle!(*args, **opts)
+      end
+      
+      def fill!(coloring)
+        raise ArgumentError, "coloring must respond to to_fill" unless coloring.respond_to?(:to_fill)
+        rectangle!(coloring, 0, 0, width, height)
+      end
+      
+      def fill(*args, **opts)
+        dup.fill(*args, **opts)
       end
     end
     
@@ -158,7 +177,7 @@ module Rszr
 
     def initialize(width, height, alpha: false, background: nil)
       raise ArgumentError, 'illegal image dimensions' if width < 1 || width > 32766 || height < 1 || height > 32766
-      raise ArgumentError, 'background must descend from Rszr::Color::Base' if background && !(background.class < Color::Base)
+      raise ArgumentError, 'background must respond to to_fill' if background && !(background.respond_to?(:to_fill))
       _initialize(width, height).tap do |image|
         image.alpha = alpha
         image.fill!(background) if background
