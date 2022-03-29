@@ -12,6 +12,10 @@ module Rszr
         [cyan, magenta, yellow, alpha]
       end
 
+      def ==(other)
+        other.is_a?(Base) && rgba == other.rgba
+      end
+
       def to_fill(*)
         Fill.new(color: self)
       end

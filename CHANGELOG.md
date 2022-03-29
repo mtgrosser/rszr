@@ -1,11 +1,15 @@
 ## Rszr 1.3.0 (unreleased)
 
-* Fix saving without extension (@mantas)
 * Alpha channel control
 * Background initialization
-* Image blending
+* Image blending / watermarking
 * Rectangle and image fills
 * Color gradients
+* Hex color codes always prefixed by "#"
+
+## Rszr 1.2.1 (Mar 22, 2022)
+
+* Fix saving without extension (@mantas)
 
 ## Rszr 1.2.0 (Mar 11, 2022)
 

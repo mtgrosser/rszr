@@ -21,6 +21,8 @@ module Rszr
           red
         elsif red.is_a?(Color::Base)
           Point.new(position, red)
+        elsif red.is_a?(String) && red.start_with?('#')
+          Point.new(position, Color.hex(red))
         else
           Point.new(position, RGBA.new(red, green, blue, alpha))
         end

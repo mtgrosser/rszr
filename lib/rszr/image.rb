@@ -148,10 +148,13 @@ module Rszr
         dup.gamma!(*args, **opts)
       end
       
-      # bang?
-      def blend(image, mode: :copy)
+      def blend!(image, x, y, mode: :copy)
         raise ArgumentError, "mode must be one of #{BLENDING_MODES.map(&:to_s).join(', ')}" unless BLENDING_MODES.include?(mode)
-        _blend(image, true, BLENDING_MODES.index(mode), 0, 0, image.width, image.height, 0, 0, image.width, image.height)
+        _blend(image, true, BLENDING_MODES.index(mode), 0, 0, image.width, image.height, x, y, image.width, image.height)
+      end
+      
+      def blend(*args, **opts)
+        dup.blend!(*args, **opts)
       end
       
       def rectangle!(coloring, x, y, w, h)

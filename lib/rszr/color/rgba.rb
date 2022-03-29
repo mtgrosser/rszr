@@ -5,6 +5,18 @@ module Rszr
       def rgba(red, green, blue, alpha = 255)
         RGBA.new(red, green, blue, alpha)
       end
+
+      def hex(str)
+        str = str[1..-1] if str.start_with?('#')
+        case str.size
+        when 3, 4 then hex(str.chars.map { |c| c * 2 }.join)
+        when 6 then hex("#{str}ff")
+        when 8
+          rgba(*str.scan(/../).map(&:hex))
+        else
+          raise ArgumentError, 'invalid color code'
+        end
+      end
     end
 
     class RGBA < Base
@@ -30,12 +42,12 @@ module Rszr
       end
 
       def to_i(alpha: true)
-        i = red.to_i << 24 | green.to_i << 16 | blue.to_i << 8 | alpha.to_i
+        i = red.to_i << 24 | green.to_i << 16 | blue.to_i << 8 | self.alpha.to_i
         alpha ? i : i >> 8
       end
 
-      def to_hex(rgb: false)
-        "%0#{rgb ? 6 : 8}x" % to_i(rgb: rgb)
+      def to_hex(alpha: true)
+        "#%0#{alpha ? 8 : 6}x" % to_i(alpha: alpha)
       end
 
     end
