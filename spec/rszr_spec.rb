@@ -53,11 +53,11 @@ RSpec.describe 'Rszr' do
     end
     
     it 'provide pixel RGBA value' do
-      expect(@image[0, 0].to_hex).to eq('4c5c6cff')
+      expect(@image[0, 0].to_hex).to eq('#4c5c6cff')
     end
     
     it 'provide pixel RGB value' do
-      expect(@image[0, 0].to_hex(rgb: true)).to eq('4c5c6c')
+      expect(@image[0, 0].to_hex(alpha: false)).to eq('#4c5c6c')
     end
     
     it 'return nil if pixel out of bounds' do

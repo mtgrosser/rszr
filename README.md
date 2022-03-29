@@ -63,9 +63,10 @@ image.width => 400
 image.height => 300
 image.dimensions => [400, 300]
 image.format => "jpeg"
+image.alpha? => false
 image[0, 0] => <Rszr::Color::RGBA @red=38, @green=115, @blue=141, @alpha=255>
-image[0, 0].to_hex => "26738dff"
-image[0, 0].to_hex(rgb: true) => "26738d"
+image[0, 0].to_hex => "#26738dff"
+image[0, 0].to_hex(alpha: false) => "#26738d"
 ```
 
 ### Transformations
@@ -124,6 +125,97 @@ image.flop
 image.dup
 ```
 
+### Image generation
+
+```ruby
+# generate new image with transparent background
+image = Rszr::Image.new(500, 500, alpha: true, background: Rszr::Color::Transparent)
+
+# fill image with 50% opacity
+image.fill!(Rszr::Color::RGBA.new(0, 206, 209, 50))
+
+# define a color gradient
+gradient = Rszr::Color::Gradient.new do |g|
+  g.point 0, 255, 250, 205, 50
+  g.point 0.5, 135, 206, 250
+  g.point 1, Rszr::Color::White
+end
+
+# draw a rectangle and fill it using the gradient with 45°
+image.rectangle!(gradient.to_fill(45), 100, 100, 300, 300)
+```
+
+### Colors
+
+```ruby
+# pre-defined colors
+Rszr::Color::White
+Rszr::Color::Black
+Rszr::Color::Transparent
+
+# RGB
+color = Rszr::Color.rgba(255, 250, 50)
+color.red => 255
+color.green => 250
+color.blue => 50
+color.alpha => 255
+color.cyan => 0
+color.magenta => 5
+color.yellow => 205
+
+# RGBA
+Rszr::Color.rgba(255, 250, 50, 255)
+
+# CMY
+Rszr::Color.cmya(0, 5, 205)
+
+# CMYA
+Rszr::Color.cmya(0, 5, 205, 255)
+```
+
+### Color gradients
+
+```ruby
+# three-color linear gradient with changing opacity
+gradient = Rszr::Color::Gradient.new do |g|
+  g.point 0, 255, 250, 205, 50
+  g.point 0.5, 135, 206, 250
+  g.point 1, Rszr::Color::White
+end
+
+# alternative syntax
+gradient = Rszr::Color::Gradient.new(0 => "#fffacd32", 0.5 => "#87cefa", 1 => "#fff")
+
+# generate fill with 45° angle
+fill = gradient.to_fill(45)
+
+# use as image background
+image = Rszr::Image.new(500, 500, background: fill)
+```
+
+### Watermarking and image blending
+
+```ruby
+# load logo
+logo = Rszr::Image.load('logo.png')
+
+# load image
+image = Rszr::Image.load('image.jpg')
+
+# enable alpha channel
+image.alpha = true
+
+# blend it onto the image at position (10, 10)
+image.blend!(logo, 10, 10)
+
+# blending modes:
+# - copy (default)
+# - add
+# - subtract
+# - reshade
+image.blend(logo, 10, 10, mode: :subtract)
+```
+
 ### Filters
 
 Filters also support bang! and non-bang methods.
@@ -173,8 +265,7 @@ In order to save interlaced PNGs and progressive JPEGs, set the `interlace` opti
 image.save('interlaced.png', interlace: true)
 ```
 
-As of v1.8.0, `imlib2` doesn't support saving progressive JPEG images yet,
-but a [patch](https://git.enlightenment.org/legacy/imlib2.git/commit/?id=37e8c9578897259211284d3590cc38b7f6a718dc) has been submitted.
+Saving progressive JPEG images requires `imlib2` >= 1.8.1.
 
 For EL8, there are pre-built RPMs provided by the [onrooby repo](http://downloads.onrooby.com/repo/el/8/x86_64/).
 
