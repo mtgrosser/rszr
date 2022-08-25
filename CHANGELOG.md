@@ -1,4 +1,4 @@
-## Rszr 1.3.0 (unreleased)
+## Rszr 1.3.0 (Aug 25, 2022)
 
 * Alpha channel control
 * Background initialization
