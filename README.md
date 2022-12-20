@@ -45,7 +45,7 @@ apt-get install libimlib2 libimlib2-dev
 ```ruby
 # bounding box 400x300
 image = Rszr::Image.load('image.jpg')
-image.resize(400, 300)
+image.resize!(400, 300)
 
 # save it
 image.save('resized.jpg')
