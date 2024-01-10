@@ -53,7 +53,7 @@ static VALUE rszr_image__initialize(VALUE self, VALUE rb_width, VALUE rb_height)
 }
 
 
-static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path)
+static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path, VALUE rb_immediately)
 {
   rszr_image_handle * handle;
   Imlib_Image image;
@@ -64,7 +64,11 @@ static VALUE rszr_image_s__load(VALUE klass, VALUE rb_path)
   path = StringValueCStr(rb_path);
 
   imlib_set_cache_size(0);
-  image = imlib_load_image_without_cache(path);
+  if (RTEST(rb_immediately)) {
+    image = imlib_load_image_immediately_without_cache(path);
+  } else {
+    image = imlib_load_image_without_cache(path);
+  }
   
   if (!image) {
     image = imlib_load_image_with_error_return(path, &error);
@@ -668,7 +672,7 @@ void Init_rszr_image()
   rb_define_alloc_func(cImage, rszr_image_s_allocate);
 
   // Class methods
-  rb_define_private_method(rb_singleton_class(cImage), "_load", rszr_image_s__load, 1);
+  rb_define_private_method(rb_singleton_class(cImage), "_load", rszr_image_s__load, 2);
 
   // Instance methods
   rb_define_method(cImage, "width",       rszr_image_width, 0);

@@ -1,3 +1,7 @@
+## Rszr 1.4.0 (Jan 11, 2024)
+
+* Fix `load_data` (@mantas)
+
 ## Rszr 1.3.0 (Aug 25, 2022)
 
 * Alpha channel control

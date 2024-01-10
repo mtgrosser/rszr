@@ -12,7 +12,7 @@ module Rszr
       def load(path, autorotate: Rszr.autorotate, **opts)
         path = path.to_s
         raise FileNotFound unless File.exist?(path)
-        image = _load(path)
+        image = _load(path, opts[:immediately])
         autorotate(image, path) if autorotate
         image
       end
@@ -21,7 +21,7 @@ module Rszr
       def load_data(data, autorotate: Rszr.autorotate, **opts)
         raise LoadError, 'Unknown format' unless format = identify(data)
         with_tempfile(format, data) do |file|
-          load(file.path, autorotate: autorotate, **opts)
+          load(file.path, autorotate: autorotate, **opts.merge(immediately: true))
         end
       end
 
@@ -41,7 +41,9 @@ module Rszr
       self._format = fmt
     end
     
-    alias_method :alpha?, :alpha
+    def alpha?
+      !!alpha
+    end
     
     def [](x, y)
       if x >= 0 && x <= width - 1 && y >= 0 && y <= height - 1

@@ -15,7 +15,9 @@ RSpec.describe 'Rszr' do
     end
 
     it 'loads image from memory' do
-      expect(Rszr::Image.load_data(RSpec.root.join('images/test.jpg').binread).format).to eq('jpeg')
+      image = Rszr::Image.load_data(RSpec.root.join('images/test.jpg').binread)
+      expect(image.format).to eq('jpeg')
+      expect(image[1,1]).to have_attributes(green: 93, blue: 112, red: 78)
     end
 
     it 'loads images with uppercase extension' do
