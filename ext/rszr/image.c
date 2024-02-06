@@ -394,6 +394,54 @@ static VALUE rszr_image__sharpen_bang(VALUE self, VALUE rb_radius)
 }
 
 
+static void rszr_desaturate_pixel(rszr_raw_pixel * pixel, int mode)
+{
+  uint8_t grey;
+  if (mode == 2 || (mode == 0 && (pixel->blue > pixel->red && pixel->blue > pixel->green))) {
+    // lightness
+    grey = (pixel->blue + (pixel->red > pixel->green ? pixel->green : pixel->red)) / 2;
+  } else if (mode == 1 || mode == 0) {
+    // luminosity
+    grey = 0.21 * pixel->red + 0.72 * pixel->green + 0.07 * pixel->blue;
+  } else {
+    // average
+    grey = (pixel->red + pixel->green + pixel->blue) / 3;
+  }
+  pixel->red = grey;
+  pixel->green = grey;
+  pixel->blue = grey;
+}
+
+static VALUE rszr_image__desaturate_bang(VALUE self, VALUE rb_mode)
+{
+  rszr_image_handle * handle;
+  rszr_raw_pixel * pixels;
+  uint64_t size;
+  int mode;
+  
+  mode = NUM2INT(rb_mode);
+  
+  Data_Get_Struct(self, rszr_image_handle, handle);
+  
+  imlib_context_set_image(handle->image);
+  
+  pixels = (rszr_raw_pixel *) imlib_image_get_data();
+  if (pixels == NULL) {
+    rb_raise(eRszrTransformationError, "error desaturating image");
+    return Qnil;
+  }
+  
+  size = imlib_image_get_width() * imlib_image_get_height();
+  for (uint64_t i = 0; i < size; i++) {
+    rszr_desaturate_pixel(&pixels[i], mode);
+  }
+  
+  imlib_image_put_back_data((uint32_t *) pixels);
+  
+  return self;
+}
+
+
 static Imlib_Image rszr_create_cropped_scaled_image(const Imlib_Image image, VALUE rb_src_x, VALUE rb_src_y, VALUE rb_src_w, VALUE rb_src_h, VALUE rb_dst_w, VALUE rb_dst_h)
 {
   Imlib_Image resized_image;
@@ -688,15 +736,16 @@ void Init_rszr_image()
   rb_define_protected_method(cImage, "_format",  rszr_image__format_get, 0);
   rb_define_protected_method(cImage, "_format=", rszr_image__format_set, 1);
 
-  rb_define_private_method(cImage, "_initialize", rszr_image__initialize, 2);
-  rb_define_private_method(cImage, "_resize",     rszr_image__resize, 7);
-  rb_define_private_method(cImage, "_crop",       rszr_image__crop, 5);
-  rb_define_private_method(cImage, "_turn!",      rszr_image__turn_bang, 1);
-  rb_define_private_method(cImage, "_rotate",     rszr_image__rotate, 2);
-  rb_define_private_method(cImage, "_sharpen!",   rszr_image__sharpen_bang, 1);
-  rb_define_private_method(cImage, "_pixel",      rszr_image__pixel_get, 2);
-  rb_define_private_method(cImage, "_blend",      rszr_image__blend, 11);
-  rb_define_private_method(cImage, "_rectangle!", rszr_image__rectangle_bang, 5);
+  rb_define_private_method(cImage, "_initialize",   rszr_image__initialize, 2);
+  rb_define_private_method(cImage, "_resize",       rszr_image__resize, 7);
+  rb_define_private_method(cImage, "_crop",         rszr_image__crop, 5);
+  rb_define_private_method(cImage, "_turn!",        rszr_image__turn_bang, 1);
+  rb_define_private_method(cImage, "_rotate",       rszr_image__rotate, 2);
+  rb_define_private_method(cImage, "_sharpen!",     rszr_image__sharpen_bang, 1);
+  rb_define_private_method(cImage, "_desaturate!",  rszr_image__desaturate_bang, 1);
+  rb_define_private_method(cImage, "_pixel",        rszr_image__pixel_get, 2);
+  rb_define_private_method(cImage, "_blend",        rszr_image__blend, 11);
+  rb_define_private_method(cImage, "_rectangle!",   rszr_image__rectangle_bang, 5);
 
   rb_define_private_method(cImage, "_save",       rszr_image__save, 4);
 }

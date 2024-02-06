@@ -238,6 +238,14 @@ image.contrast(0.5)
 
 # gamma
 image.gamma(1.1)
+
+# convert to grayscale (automatic mode)
+image.desaturate
+
+# convert to grayscale with mode
+image.desaturate(:lightness)
+image.desaturate(:luminosity)
+image.desaturate(:average)
 ```
 
 ### Image auto orientation

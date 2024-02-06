@@ -318,6 +318,16 @@ RSpec.describe 'Rszr' do
     it 'filters' do
       expect(@image.filter('bump_map( map=tint(red=50,tint=200), blue=10 );').dimensions).to eq(@image.dimensions)
     end
+    
+    %i[dynamic luminosity lightness average].each do |mode|
+      it "desaturates in mode #{mode}" do
+        @image.desaturate!(mode)
+        pixel = @image[500, 500]
+        expect(pixel.red).to eq(pixel.green)
+        expect(pixel.blue).to eq(pixel.red)
+      end
+    end
+
   end
 
 end

@@ -1,3 +1,7 @@
+## Rsze 1.5.0 (Feb 6, 2024)
+
+* Image desaturation (grayscale)
+
 ## Rszr 1.4.0 (Jan 11, 2024)
 
 * Fix `load_data` (@mantas)

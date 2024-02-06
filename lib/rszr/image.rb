@@ -2,6 +2,7 @@ module Rszr
   class Image
     GRAVITIES = [true, :center, :n, :nw, :w, :sw, :s, :se, :e, :ne].freeze
     BLENDING_MODES = %i[copy add subtract reshade].freeze
+    DESATURATION_MODES = %i[dynamic luminosity lightness average].freeze
     
     extend Identification
     include Buffered
@@ -117,6 +118,16 @@ module Rszr
       def blur!(radius)
         raise ArgumentError, 'illegal radius' if radius < 0
         _sharpen!(-radius)
+      end
+      
+      def desaturate!(mode = :dynamic)
+        _mode = DESATURATION_MODES.index(mode)
+        raise ArgumentError, 'illegal mode' unless _mode
+        _desaturate!(_mode);
+      end
+      
+      def desaturate(*args, **opts)
+        dup.desaturate!(*args, **opts)
       end
       
       def filter(filter_expr)
