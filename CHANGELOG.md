@@ -1,4 +1,4 @@
-## Rsze 1.5.0 (Feb 6, 2024)
+## Rszr 1.5.0 (Feb 6, 2024)
 
 * Image desaturation (grayscale)
 
