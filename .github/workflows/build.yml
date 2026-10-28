@@ -23,7 +23,7 @@ jobs:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true
     - name: APT update
-      run: apt update
+      run: sudo apt update
     - name: Set up libs
       run: sudo apt-get install -y libimlib2 libimlib2-dev
     - name: Compile extension
