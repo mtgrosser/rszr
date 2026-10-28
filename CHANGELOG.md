@@ -1,3 +1,8 @@
+## Rszr 1.5.1 (Oct 28, 2026)
+
+* Fix possible data leak on instantiation of new image
+* Use CRuby `xfree`
+
 ## Rszr 1.5.0 (Feb 6, 2024)
 
 * Image desaturation (grayscale)

@@ -1,3 +1,5 @@
+require_relative 'spec_helper'
+
 RSpec.describe 'Rszr' do
 
   it 'has a version number' do

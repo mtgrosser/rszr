@@ -27,14 +27,14 @@ static void rszr_image_deallocate(rszr_image_handle * handle)
     rszr_free_image(handle->image);
     handle->image = NULL;
   }
-  free(handle);
+  xfree(handle);
   // fprintf(stderr, "\n");
 }
 
 static VALUE rszr_image_s_allocate(VALUE klass)
 {
-  rszr_image_handle * handle = calloc(1, sizeof(rszr_image_handle));
-  return Data_Wrap_Struct(klass, NULL, rszr_image_deallocate, handle);
+  rszr_image_handle * handle;
+  return Data_Make_Struct(klass, rszr_image_handle, NULL, rszr_image_deallocate, handle);
 }
 
 
@@ -48,6 +48,13 @@ static VALUE rszr_image__initialize(VALUE self, VALUE rb_width, VALUE rb_height)
   Data_Get_Struct(self, rszr_image_handle, handle);
   
   handle->image = imlib_create_image(FIX2INT(rb_width), FIX2INT(rb_height));
+
+  if (!handle->image) {
+    rb_raise(eRszrInternalError, "error creating image");
+  }
+
+  imlib_context_set_image(handle->image);
+  imlib_image_clear();
 
   return self;
 }

@@ -6,6 +6,7 @@ void rszr_raise_load_error(Imlib_Load_Error error);
 void rszr_raise_save_error(Imlib_Load_Error error);
 
 extern VALUE eRszrError;
+extern VALUE eRszrInternalError;
 extern VALUE eRszrFileNotFound;
 extern VALUE eRszrTransformationError;
 extern VALUE eRszrErrorWithMessage;

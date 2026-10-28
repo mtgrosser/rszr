@@ -23,12 +23,11 @@ RSpec.describe 'Rszr' do
       Tempfile.open('src') do |src_file|
         src_file.binmode
         src_file.write data
-        Rszr::Image.open(src_file.path) do |image|
-          image.resize!(200, :auto)
-          Tempfile.open('dst') do |dst_file|
-            image.save(dst_file.path)
-            dst_file.close(true)
-          end
+        image = Rszr::Image.open(src_file.path)
+        image.resize!(200, :auto)
+        Tempfile.open('dst') do |dst_file|
+          image.save(dst_file.path)
+          dst_file.close(true)
         end
         src_file.close(true)
       end
